@@ -2,6 +2,7 @@ module Backoffice
   class BaseController < ActionController::Base
     layout 'backoffice'
     helper Backoffice::DisplayHelper
+    helper Backoffice::NavigationHelper
     protect_from_forgery with: :exception
     before_action :require_staff!
     before_action :restrict_collection_operator!

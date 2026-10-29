@@ -6,34 +6,48 @@
   <title>CACAU TRIP · Gestão</title>
   <%= csrf_meta_tags %>
   <%= stylesheet_link_tag '/backoffice.css' %>
+  <%= stylesheet_link_tag '/backoffice-navigation.css' %>
 </head>
 <body>
   <% if current_admin_user %>
     <aside class="sidebar">
-      <a class="brand" href="<%= backoffice_root_path %>"><span class="logo">C</span><span>CACAU TRIP<small>PAINEL DE GESTÃO</small></span></a>
-      <nav aria-label="Áreas administrativas">
-        <%= link_to 'Códigos de coleta', backoffice_eco_codes_path, class: ('selected' if controller_name == 'eco_codes') %>
-        <% unless current_admin_user.collection_operator? %>
-        <%= link_to 'Validar benefício verde', backoffice_eco_vouchers_path, class: ('selected' if controller_name == 'eco_vouchers') %>
-        <%= link_to 'Atendimento humano', backoffice_support_chats_path, class: ('selected' if controller_name == 'support_chats') %>
-        <%= link_to 'Visão geral', backoffice_root_path, class: ('selected' if controller_name == 'dashboard') %>
-        <% end %>
-        <% if current_admin_user.admin? %>
-          <%= link_to 'Pontos de coleta', backoffice_collection_points_path, class: ('selected' if @resource == 'eco_collection_points') %>
-        <% end %>
-        <% Backoffice::Registry::RESOURCES.each do |key, spec| %>
-          <% next if %w[tickets eco_collection_points].include?(key) %>
-          <% if can_read?(key) %><%= link_to spec[:label], backoffice_records_path(resource: key), class: ('selected' if @resource == key) %><% end %>
-        <% end %>
-        <% if current_admin_user.admin? %>
-          <%= link_to 'Comissões', backoffice_commission_path, class: ('selected' if controller_name == 'finance') %>
-          <%= link_to 'Relatórios e fluxo', backoffice_reports_path, class: ('selected' if controller_name == 'reports') %>
-        <% end %>
-      </nav>
-      <div class="staff"><strong><%= current_admin_user.name %></strong><small><%= Backoffice::DisplayHelper::VALUES.fetch(current_admin_user.role, current_admin_user.role) %></small><%= button_to 'Sair com segurança', backoffice_logout_path, method: :delete, class: 'secondary' %></div>
+      <% sections = management_sections %>
+      <a class="brand" href="<%= management_home_path %>"><span class="logo"><%= management_icon('S', size: 25) %></span><span>CACAU TRIP<small>PAINEL DE GESTÃO</small></span></a>
+      <details class="management-menu" open>
+        <summary class="management-menu-toggle"><span><%= management_icon('menu', size: 18) %> Menu de gestão</span><%= management_icon('chevron', size: 16) %></summary>
+        <nav class="management-nav" aria-label="Áreas administrativas">
+          <% unless current_admin_user.collection_operator? %>
+            <%= link_to backoffice_root_path, class: "nav-overview #{'selected' if controller_name == 'dashboard'}", 'aria-current': (controller_name == 'dashboard' ? 'page' : nil) do %><%= management_icon('overview', size: 18) %><span>Visão geral</span><% end %>
+          <% end %>
+          <p class="nav-caption">ÁREAS DE TRABALHO</p>
+          <% sections.each do |section| %>
+            <details class="nav-group" <%= 'open' if section[:open] %>>
+              <summary><span class="nav-group-icon"><%= management_icon(section[:marker], size: 19) %></span><span class="nav-group-name"><%= section[:title] %></span><span class="nav-group-chevron"><%= management_icon('chevron', size: 14) %></span></summary>
+              <div class="nav-group-links">
+                <% section[:items].each do |item| %>
+                  <%= link_to item[:label], item[:path], class: ('selected' if item[:active]), 'aria-current': (item[:active] ? 'page' : nil) %>
+                <% end %>
+              </div>
+            </details>
+          <% end %>
+        </nav>
+      </details>
+      <div class="staff">
+        <div class="staff-profile"><span class="staff-avatar" aria-hidden="true"><%= current_admin_user.name.to_s.split.first(2).map { |part| part[0] }.join.upcase %></span><div class="staff-identity"><strong title="<%= current_admin_user.name %>"><%= current_admin_user.name %></strong><small><%= Backoffice::DisplayHelper::VALUES.fetch(current_admin_user.role, current_admin_user.role) %></small></div></div>
+        <%= button_to backoffice_logout_path, method: :delete, class: 'staff-logout', title: 'Encerrar sessão', aria: { label: 'Sair da conta' } do %><%= management_icon('logout', size: 17) %><span>Sair da conta</span><% end %>
+      </div>
     </aside>
   <% end %>
   <main class="<%= current_admin_user ? 'main' : 'login-main' %>">
+    <% if current_admin_user %>
+      <% active_section = sections.find { |section| section[:items].any? { |item| item[:active] } } %>
+      <% active_item = active_section&.dig(:items)&.find { |item| item[:active] } %>
+      <header class="management-toolbar"><nav class="management-breadcrumb" aria-label="Localização no painel">
+        <%= link_to 'Gestão', management_home_path %>
+        <% if active_section %><span aria-hidden="true">/</span><span><%= active_section[:title] %></span><% end %>
+        <span aria-hidden="true">/</span><strong aria-current="page"><%= active_item&.dig(:label) || 'Visão geral' %></strong>
+      </nav><span class="management-role"><span aria-hidden="true"></span><%= Backoffice::DisplayHelper::VALUES.fetch(current_admin_user.role, current_admin_user.role) %></span></header>
+    <% end %>
     <% flash.each do |kind, message| %><div role="alert" class="flash <%= kind == 'alert' ? 'error' : 'success' %>"><%= message %></div><% end %>
     <%= yield %>
   </main>
