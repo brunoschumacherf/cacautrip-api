@@ -9,8 +9,11 @@ class AuthenticationController < ApplicationController
   end
 
   def login
-    user = User.find_by(email: params[:email])
-    if user && user.authenticate(params[:password])
+    email = params[:email] || params.dig(:authentication, :email)
+    password = params[:password] || params.dig(:authentication, :password)
+
+    user = User.find_by(email: email)
+    if user && user.authenticate(password)
       render json: { 
         message: "Login realizado com sucesso", 
         user: { id: user.id, name: user.name, email: user.email, gov_verified: user.gov_verified } 
@@ -23,6 +26,8 @@ class AuthenticationController < ApplicationController
   private
 
   def user_params
+    params.require(:authentication).permit(:name, :email, :password, :password_confirmation)
+  rescue ActionController::ParameterMissing
     params.permit(:name, :email, :password, :password_confirmation)
   end
 end
