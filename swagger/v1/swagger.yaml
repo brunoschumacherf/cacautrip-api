@@ -4260,6 +4260,74 @@ paths:
             example:
               reward_id: 1
               request_key: resgate-exemplo-20261120-001
+  "/map_points":
+    get:
+      operationId: get_map_points
+      summary: Listar locais e serviços do mapa
+      description: Independente da paginação do catálogo. Destinos ativos, trilhas
+        públicas, coleta, parceiros, profissionais publicados/verificados e apoio
+        cadastrado. Guia/motorista representa área de atendimento, não posição em
+        tempo real. approximate identifica resultados por rua/região. category distingue
+        hospitais/delegacias. Endereços sem coordenadas ficam em unlocated; o cliente
+        pode atualizar após o processamento. Não é uma busca genérica de estabelecimentos
+        externos.
+      tags:
+      - Catálogo e destinos
+      security: []
+      responses:
+        '200':
+          description: Operação realizada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  points:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/MapPoint"
+                  total:
+                    type: integer
+                    format: int64
+                  unlocated_count:
+                    type: integer
+                    format: int64
+                  unlocated:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        kind:
+                          type: string
+                        name:
+                          type: string
+                        address:
+                          type: string
+                          nullable: true
+                  counts:
+                    type: object
+                    properties: {}
+        '422':
+          description: Validação ou regra de negócio não atendida
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      parameters:
+      - name: q
+        in: query
+        required: false
+        description: Busca por nome, endereço, cidade e categoria.
+        schema:
+          type: string
+      - name: kinds
+        in: query
+        required: false
+        description: 'Tipos separados por vírgula: destination,trail,collection,partner,guide,driver,emergency.'
+        schema:
+          type: string
   "/admin/dashboard":
     get:
       operationId: get_admin_dashboard
@@ -5201,7 +5269,7 @@ paths:
         Somente admin tem gestão integral. Suporte lê users, bookings, tickets, reports, reviews, messages, incidents, alerts, emergency_points e escreve tickets, reports, reviews, messages, incidents. Operador de coleta não acessa estes recursos: só emite códigos no ponto vinculado. tickets redireciona à tela dedicada de atendimento humano; não use o formulário genérico para responder.
         Recursos e campos editáveis (campos omitidos não são alterados):
         - eco_collection_points (Pontos de coleta): name, city, address, description, materials, opening_hours, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
-        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, active. Criação: sim; exclusão física: não.
+        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
         - eco_rewards (Benefícios e descontos verdes): title, description, scope, eco_partner_id, image_url, discount_type, discount_value, minimum_amount, maximum_discount, points_cost, stock, expires_at, active. Criação: sim; exclusão física: não.
         - users (Usuários): name, email, suspended. Criação: não; exclusão física: não.
         - guides (Guias): moderation_status, verified_documents, available, region, specialization, languages, description, services, document_reference. Criação: não; exclusão física: não.
@@ -5320,7 +5388,7 @@ paths:
         Somente admin tem gestão integral. Suporte lê users, bookings, tickets, reports, reviews, messages, incidents, alerts, emergency_points e escreve tickets, reports, reviews, messages, incidents. Operador de coleta não acessa estes recursos: só emite códigos no ponto vinculado. tickets redireciona à tela dedicada de atendimento humano; não use o formulário genérico para responder.
         Recursos e campos editáveis (campos omitidos não são alterados):
         - eco_collection_points (Pontos de coleta): name, city, address, description, materials, opening_hours, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
-        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, active. Criação: sim; exclusão física: não.
+        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
         - eco_rewards (Benefícios e descontos verdes): title, description, scope, eco_partner_id, image_url, discount_type, discount_value, minimum_amount, maximum_discount, points_cost, stock, expires_at, active. Criação: sim; exclusão física: não.
         - users (Usuários): name, email, suspended. Criação: não; exclusão física: não.
         - guides (Guias): moderation_status, verified_documents, available, region, specialization, languages, description, services, document_reference. Criação: não; exclusão física: não.
@@ -5432,7 +5500,7 @@ paths:
         Somente admin tem gestão integral. Suporte lê users, bookings, tickets, reports, reviews, messages, incidents, alerts, emergency_points e escreve tickets, reports, reviews, messages, incidents. Operador de coleta não acessa estes recursos: só emite códigos no ponto vinculado. tickets redireciona à tela dedicada de atendimento humano; não use o formulário genérico para responder.
         Recursos e campos editáveis (campos omitidos não são alterados):
         - eco_collection_points (Pontos de coleta): name, city, address, description, materials, opening_hours, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
-        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, active. Criação: sim; exclusão física: não.
+        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
         - eco_rewards (Benefícios e descontos verdes): title, description, scope, eco_partner_id, image_url, discount_type, discount_value, minimum_amount, maximum_discount, points_cost, stock, expires_at, active. Criação: sim; exclusão física: não.
         - users (Usuários): name, email, suspended. Criação: não; exclusão física: não.
         - guides (Guias): moderation_status, verified_documents, available, region, specialization, languages, description, services, document_reference. Criação: não; exclusão física: não.
@@ -5542,7 +5610,7 @@ paths:
         Somente admin tem gestão integral. Suporte lê users, bookings, tickets, reports, reviews, messages, incidents, alerts, emergency_points e escreve tickets, reports, reviews, messages, incidents. Operador de coleta não acessa estes recursos: só emite códigos no ponto vinculado. tickets redireciona à tela dedicada de atendimento humano; não use o formulário genérico para responder.
         Recursos e campos editáveis (campos omitidos não são alterados):
         - eco_collection_points (Pontos de coleta): name, city, address, description, materials, opening_hours, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
-        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, active. Criação: sim; exclusão física: não.
+        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
         - eco_rewards (Benefícios e descontos verdes): title, description, scope, eco_partner_id, image_url, discount_type, discount_value, minimum_amount, maximum_discount, points_cost, stock, expires_at, active. Criação: sim; exclusão física: não.
         - users (Usuários): name, email, suspended. Criação: não; exclusão física: não.
         - guides (Guias): moderation_status, verified_documents, available, region, specialization, languages, description, services, document_reference. Criação: não; exclusão física: não.
@@ -5649,7 +5717,7 @@ paths:
         Somente admin tem gestão integral. Suporte lê users, bookings, tickets, reports, reviews, messages, incidents, alerts, emergency_points e escreve tickets, reports, reviews, messages, incidents. Operador de coleta não acessa estes recursos: só emite códigos no ponto vinculado. tickets redireciona à tela dedicada de atendimento humano; não use o formulário genérico para responder.
         Recursos e campos editáveis (campos omitidos não são alterados):
         - eco_collection_points (Pontos de coleta): name, city, address, description, materials, opening_hours, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
-        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, active. Criação: sim; exclusão física: não.
+        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
         - eco_rewards (Benefícios e descontos verdes): title, description, scope, eco_partner_id, image_url, discount_type, discount_value, minimum_amount, maximum_discount, points_cost, stock, expires_at, active. Criação: sim; exclusão física: não.
         - users (Usuários): name, email, suspended. Criação: não; exclusão física: não.
         - guides (Guias): moderation_status, verified_documents, available, region, specialization, languages, description, services, document_reference. Criação: não; exclusão física: não.
@@ -5768,7 +5836,7 @@ paths:
         Somente admin tem gestão integral. Suporte lê users, bookings, tickets, reports, reviews, messages, incidents, alerts, emergency_points e escreve tickets, reports, reviews, messages, incidents. Operador de coleta não acessa estes recursos: só emite códigos no ponto vinculado. tickets redireciona à tela dedicada de atendimento humano; não use o formulário genérico para responder.
         Recursos e campos editáveis (campos omitidos não são alterados):
         - eco_collection_points (Pontos de coleta): name, city, address, description, materials, opening_hours, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
-        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, active. Criação: sim; exclusão física: não.
+        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
         - eco_rewards (Benefícios e descontos verdes): title, description, scope, eco_partner_id, image_url, discount_type, discount_value, minimum_amount, maximum_discount, points_cost, stock, expires_at, active. Criação: sim; exclusão física: não.
         - users (Usuários): name, email, suspended. Criação: não; exclusão física: não.
         - guides (Guias): moderation_status, verified_documents, available, region, specialization, languages, description, services, document_reference. Criação: não; exclusão física: não.
@@ -5893,7 +5961,7 @@ paths:
         Somente admin tem gestão integral. Suporte lê users, bookings, tickets, reports, reviews, messages, incidents, alerts, emergency_points e escreve tickets, reports, reviews, messages, incidents. Operador de coleta não acessa estes recursos: só emite códigos no ponto vinculado. tickets redireciona à tela dedicada de atendimento humano; não use o formulário genérico para responder.
         Recursos e campos editáveis (campos omitidos não são alterados):
         - eco_collection_points (Pontos de coleta): name, city, address, description, materials, opening_hours, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
-        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, active. Criação: sim; exclusão física: não.
+        - eco_partners (Parceiros sustentáveis): name, city, address, description, image_url, latitude, longitude, active. Criação: sim; exclusão física: não.
         - eco_rewards (Benefícios e descontos verdes): title, description, scope, eco_partner_id, image_url, discount_type, discount_value, minimum_amount, maximum_discount, points_cost, stock, expires_at, active. Criação: sim; exclusão física: não.
         - users (Usuários): name, email, suspended. Criação: não; exclusão física: não.
         - guides (Guias): moderation_status, verified_documents, available, region, specialization, languages, description, services, document_reference. Criação: não; exclusão física: não.
@@ -6902,6 +6970,8 @@ components:
         updated_at:
           type: string
           format: date-time
+        geocoding_approximate:
+          type: boolean
         distance_km:
           type: number
           nullable: true
@@ -6965,6 +7035,8 @@ components:
         updated_at:
           type: string
           format: date-time
+        geocoding_approximate:
+          type: boolean
     Route:
       type: object
       properties:
@@ -7047,6 +7119,8 @@ components:
         updated_at:
           type: string
           format: date-time
+        geocoding_approximate:
+          type: boolean
     GuideRecord:
       type: object
       properties:
@@ -7422,6 +7496,8 @@ components:
         updated_at:
           type: string
           format: date-time
+        geocoding_approximate:
+          type: boolean
     EcoPartner:
       type: object
       properties:
@@ -7448,6 +7524,24 @@ components:
         updated_at:
           type: string
           format: date-time
+        latitude:
+          oneOf:
+          - type: number
+          - type: string
+            pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: Decimal persistido pode ser string; valor calculado pode ser
+            número.
+          nullable: true
+        longitude:
+          oneOf:
+          - type: number
+          - type: string
+            pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: Decimal persistido pode ser string; valor calculado pode ser
+            número.
+          nullable: true
+        geocoding_approximate:
+          type: boolean
     Decimal:
       oneOf:
       - type: number
@@ -8195,6 +8289,8 @@ components:
               updated_at:
                 type: string
                 format: date-time
+              geocoding_approximate:
+                type: boolean
               start_after_minutes:
                 type: integer
                 format: int64
@@ -8972,6 +9068,44 @@ components:
           example: Preciso de ajuda com minha reserva.
       required:
       - message
+    MapPoint:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+          - destination
+          - trail
+          - collection
+          - partner
+          - guide
+          - driver
+          - emergency
+        name:
+          type: string
+        category:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+        longitude:
+          type: number
+        approximate:
+          type: boolean
+        note:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
     LegacyRecordInput:
       type: object
       properties:
@@ -9118,6 +9252,22 @@ components:
           nullable: true
         image_url:
           type: string
+          nullable: true
+        latitude:
+          oneOf:
+          - type: number
+          - type: string
+            pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: Decimal persistido pode ser string; valor calculado pode ser
+            número.
+          nullable: true
+        longitude:
+          oneOf:
+          - type: number
+          - type: string
+            pattern: "^-?[0-9]+(\\.[0-9]+)?$"
+          description: Decimal persistido pode ser string; valor calculado pode ser
+            número.
           nullable: true
         active:
           type: boolean

@@ -2,7 +2,7 @@
 
 Contrato: swagger.yaml. Abrir em http://localhost:3000/api-docs.
 
-99 caminhos e 125 operações HTTP documentados.
+100 caminhos e 126 operações HTTP documentados.
 
 | Método | Caminho | Grupo | Operação |
 |---|---|---|---|
@@ -96,6 +96,7 @@ Contrato: swagger.yaml. Abrir em http://localhost:3000/api-docs.
 | GET | `/sustainability/overview` | Sustentabilidade | Consultar resumo da home |
 | POST | `/sustainability/claim` | Sustentabilidade | Creditar pontos por código de coleta |
 | POST | `/sustainability/redeem` | Sustentabilidade | Trocar pontos por benefício |
+| GET | `/map_points` | Catálogo e destinos | Listar locais e serviços do mapa |
 | GET | `/admin/dashboard` | Administração JSON legada | Consultar indicadores administrativos |
 | PATCH | `/admin/commission` | Administração JSON legada | Alterar taxa de comissão |
 | GET | `/admin/{resource}` | Administração JSON legada | Listar registros administrativos |

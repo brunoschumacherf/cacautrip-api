@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -123,6 +123,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_120000) do
     t.string "best_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "geocoding_approximate", default: false, null: false
     t.index ["provider_id"], name: "index_destinations_on_provider_id"
   end
 
@@ -178,6 +179,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_120000) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "geocoding_approximate", default: false, null: false
   end
 
   create_table "eco_partners", force: :cascade do |t|
@@ -189,6 +191,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_120000) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "latitude", precision: 10, scale: 7
+    t.decimal "longitude", precision: 10, scale: 7
+    t.boolean "geocoding_approximate", default: false, null: false
   end
 
   create_table "eco_point_entries", force: :cascade do |t|
@@ -255,6 +260,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_120000) do
     t.float "longitude"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "geocoding_approximate", default: false, null: false
+  end
+
+  create_table "geocoded_addresses", force: :cascade do |t|
+    t.string "fingerprint", null: false
+    t.text "query", null: false
+    t.string "status", default: "pending", null: false
+    t.jsonb "result", default: {}, null: false
+    t.datetime "requested_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["fingerprint"], name: "index_geocoded_addresses_on_fingerprint", unique: true
   end
 
   create_table "google_auth_flows", force: :cascade do |t|
@@ -460,6 +477,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_120000) do
     t.boolean "optional", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "geocoding_approximate", default: false, null: false
     t.index ["trail_id", "position"], name: "index_trail_stops_on_trail_id_and_position"
     t.index ["trail_id"], name: "index_trail_stops_on_trail_id"
   end

@@ -50,6 +50,7 @@ Rails.application.routes.draw do
   get '/privacy/export', to: 'privacy#export'
   post '/privacy/deletion_request', to: 'privacy#request_deletion'
   get '/catalog', to: 'catalog#index'
+  get '/map_points', to: 'map_points#index'
   get '/destinations/:id', to: 'catalog#show'
   get '/shared_routes/:token', to: 'shared_routes#show'
   post '/routes/suggest', to: 'routes#suggest'

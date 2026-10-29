@@ -1,4 +1,5 @@
 class TrailStop < ApplicationRecord
+  include GeocodablePlace
   belongs_to :trail, inverse_of: :stops
   validates :name, :address, presence: true
   validates :name, :address, length: { maximum: 300 }

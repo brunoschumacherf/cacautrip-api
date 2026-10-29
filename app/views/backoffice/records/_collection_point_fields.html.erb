@@ -9,7 +9,7 @@
 <div class="field"><%= form.label :opening_hours, 'Dias e horários de atendimento' %><%= form.text_field :opening_hours, value: @record.opening_hours, maxlength: 255, placeholder: 'Dias da semana e horários para receber as entregas' %></div>
 <div class="field"><%= form.label :image_url, 'Foto do ponto (URL, opcional)' %><%= form.url_field :image_url, value: @record.image_url, maxlength: 255, placeholder: 'https://' %></div>
 <h2>Localização no mapa</h2>
-<p class="muted">Opcional. Informe as duas coordenadas para mostrar o local no mapa do app. O endereço continua visível mesmo sem coordenadas.</p>
+<p class="muted">O endereço será localizado automaticamente após salvar. Para indicar o ponto exato, você também pode preencher as duas coordenadas manualmente. Resultados aproximados são identificados no mapa.</p>
 <div class="two-columns">
   <div class="field"><%= form.label :latitude, 'Latitude' %><%= form.number_field :latitude, value: @record.latitude, min: -90, max: 90, step: 'any' %></div>
   <div class="field"><%= form.label :longitude, 'Longitude' %><%= form.number_field :longitude, value: @record.longitude, min: -180, max: 180, step: 'any' %></div>

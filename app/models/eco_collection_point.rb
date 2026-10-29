@@ -1,4 +1,5 @@
 class EcoCollectionPoint < ApplicationRecord
+  include GeocodablePlace
   has_many :eco_collection_codes, dependent: :restrict_with_error
   validates :name, :city, :address, presence: true, length: { maximum: 255 }
   validates :materials, :opening_hours, :image_url, length: { maximum: 255 }, allow_blank: true

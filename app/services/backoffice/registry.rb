@@ -4,7 +4,7 @@ module Backoffice
     SUPPORT_WRITE = %w[tickets reports reviews messages incidents].freeze
     RESOURCES = {
       'eco_collection_points' => { model: 'EcoCollectionPoint', label: 'Pontos de coleta', create_label: 'Adicionar ponto de coleta', columns: %w[name city address active], edit: %w[name city address description materials opening_hours image_url latitude longitude active], search: %w[name city address], create: true },
-      'eco_partners' => { model: 'EcoPartner', label: 'Parceiros sustentáveis', columns: %w[name city address active], edit: %w[name city address description image_url active], search: %w[name city address], create: true },
+      'eco_partners' => { model: 'EcoPartner', label: 'Parceiros sustentáveis', columns: %w[name city address active], edit: %w[name city address description image_url latitude longitude active], search: %w[name city address], create: true },
       'eco_rewards' => { model: 'EcoReward', label: 'Benefícios e descontos verdes', columns: %w[title scope points_cost discount_type discount_value stock active], edit: %w[title description scope eco_partner_id image_url discount_type discount_value minimum_amount maximum_discount points_cost stock expires_at active], search: %w[title description], create: true },
       'users' => { model: 'User', label: 'Usuários', columns: %w[name email suspended created_at], edit: %w[name email suspended], search: %w[name email] },
       'guides' => { model: 'GuideProfile', label: 'Guias', columns: %w[user_id region moderation_status verified_documents available], edit: %w[moderation_status verified_documents available region specialization languages description services document_reference], search: %w[region specialization] },

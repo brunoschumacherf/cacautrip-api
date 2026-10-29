@@ -1,0 +1,2 @@
+class GeocodedAddress < ApplicationRecord
+end

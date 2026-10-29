@@ -1,4 +1,5 @@
 class Destination < ApplicationRecord
+  include GeocodablePlace
   belongs_to :provider, class_name: 'User', optional: true
   validates :name, :category, presence: true
   validates :price, numericality: { greater_than_or_equal_to: 0 }

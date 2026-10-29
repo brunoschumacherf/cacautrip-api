@@ -109,7 +109,7 @@ App: aba Eco, ao lado de Roteiros. Painel: http://localhost:3000/gestao. Pontos 
 |---|---|---|---|---|---|
 MD
 points.each { |point| section << "| #{point.id} | #{cell.call(point.name)} | #{point.city} | #{cell.call(point.address)} | #{cell.call(point.materials)} | #{cell.call(point.opening_hours)} |\n" }
-section << "\nAs coordenadas foram deixadas vazias: nenhum marcador de mapa foi inventado. O endereço aparece normalmente na lista do aplicativo.\n\n### Operadores de coleta\n\nEstas são contas AdminUser do painel, separadas do login do aplicativo. Cada operador só emite códigos do seu ponto. Não gerencia benefícios, locais ou outros usuários.\n\n| E-mail | Senha local | Ponto vinculado | Conta ativa |\n|---|---|---|---|\n"
+section << "\nAs coordenadas são preenchidas pelo processamento de endereços do app. Resultados por logradouro são aproximados e identificados no mapa; consulte MAPS.md.\n\n### Operadores de coleta\n\nEstas são contas AdminUser do painel, separadas do login do aplicativo. Cada operador só emite códigos do seu ponto. Não gerencia benefícios, locais ou outros usuários.\n\n| E-mail | Senha local | Ponto vinculado | Conta ativa |\n|---|---|---|---|\n"
 operators.each do |operator|
   password_note = operator.authenticate(operator_password) ? "`#{operator_password}`" : 'Senha anterior preservada; consulte o administrador'
   section << "| #{operator.email} | #{password_note} | #{cell.call(operator.eco_collection_point.name)} | #{operator.active? ? 'Sim' : 'Não'} |\n"
@@ -163,3 +163,4 @@ File.write(notes_path, notes + section)
 puts "Ilhéus: #{points.size} pontos, #{partners.size} parceiros de apresentação, #{rewards.size} benefícios, #{codes.size} códigos de coleta, #{operators.size} operadores e #{vouchers.size} cupons preparados."
 puts "Contas preparadas: #{people.map { |person| "#{person.email}=#{person.reload.eco_points} pontos" }.join(', ')}"
 puts "Documentação e códigos gravados em #{notes_path}. Nenhuma senha anterior foi alterada."
+
