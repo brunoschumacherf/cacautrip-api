@@ -1,0 +1,34 @@
+<header class="page-heading"><div><p class="eyebrow"><%= @spec[:label] %></p><h1><%= @record.persisted? ? "Editar registro ##{@record.id}" : 'Novo registro' %></h1></div><%= link_to 'Voltar', backoffice_records_path(resource: @resource), class: 'secondary' %></header>
+<section class="panel form-panel">
+  <% if @record.errors.any? %><div class="flash error" role="alert"><strong>Revise os dados:</strong><ul><% @record.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul></div><% end %>
+  <% if %w[guides drivers].include?(@resource) %><p class="callout">Para aprovar, escolha “Publicado” e confirme o campo de documentação. A conta precisa estar autenticada no Gov.br e ter referência documental.</p><% end %>
+  <% if @resource == 'admin_users' %><p class="callout">Administradores têm acesso integral. Suporte atua no atendimento e moderação, sem alterações financeiras ou gestão da equipe. Senhas exigem pelo menos 12 caracteres.</p><% end %>
+  <%= form_with scope: :record, url: @record.persisted? ? backoffice_record_path(resource: @resource, id: @record.id) : backoffice_records_path(resource: @resource), method: @record.persisted? ? :patch : :post, local: true do |form| %>
+    <% @spec[:edit].each do |field| %>
+      <% options = field_options(@resource, field) %>
+      <div class="field">
+        <% if Backoffice::Registry::BOOLEAN_FIELDS.include?(field) %>
+          <label class="check"><%= form.check_box field, checked: @record.public_send(field) %><span><%= field_label(field) %></span></label>
+        <% else %>
+          <%= form.label field, field_label(field) %>
+          <% if field.start_with?('password') %>
+            <%= form.password_field field, autocomplete: 'new-password', minlength: 12, required: !@record.persisted? %>
+          <% elsif options %>
+            <%= form.select field, options.map { |value| [Backoffice::DisplayHelper::VALUES.fetch(value, value), value] }, { selected: @record.public_send(field) } %>
+          <% elsif Backoffice::Registry::TEXT_FIELDS.include?(field) %>
+            <%= form.text_area field, value: @record.public_send(field), rows: 5 %>
+          <% elsif field.end_with?('_at') %>
+            <%= form.datetime_local_field field, value: @record.public_send(field)&.strftime('%Y-%m-%dT%H:%M') %>
+          <% elsif Backoffice::Registry::NUMBER_FIELDS.include?(field) %>
+            <%= form.number_field field, value: @record.public_send(field), step: 'any' %>
+          <% elsif field == 'email' %>
+            <%= form.email_field field, value: @record.public_send(field), required: true %>
+          <% else %>
+            <%= form.text_field field, value: @record.public_send(field) %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+    <div class="actions"><%= form.submit 'Salvar alterações', class: 'primary' %><%= link_to 'Cancelar', backoffice_records_path(resource: @resource), class: 'secondary' %></div>
+  <% end %>
+</section>

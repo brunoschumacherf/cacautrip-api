@@ -1,7 +1,13 @@
 class ProfessionalProfilesController < ApplicationController
-  before_action :authenticate_user!, only: [:create_guide, :create_driver, :mine]
+  before_action :authenticate_user!, only: [:create_guide, :create_driver, :mine, :commission]
 
   COMMON = [:region, :price, :available, :accessible, :services, :document_reference, :description, :image_url].freeze
+
+  def commission
+    render json: CommissionQuote.call(params[:amount].presence || 0)
+  rescue ArgumentError
+    render_error('Informe um valor válido para consultar a comissão')
+  end
 
   def create_guide
     save_profile('guide', COMMON + [:specialization, :languages])

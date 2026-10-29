@@ -1,0 +1,13 @@
+<header class="page-heading"><div><p class="eyebrow">GESTÃO DE REGISTROS</p><h1><%= @spec[:label] %></h1><p><%= @total %> registro(s) encontrado(s).</p></div><% if @spec[:create] && can_write?(@resource) %><%= link_to (@resource == 'admin_users' ? 'Criar usuário da equipe' : 'Adicionar registro'), backoffice_new_record_path(resource: @resource), class: 'primary' %><% end %></header>
+<section class="panel">
+  <%= form_with url: backoffice_records_path(resource: @resource), method: :get, local: true, class: 'filters' do |form| %>
+    <div><%= form.label :q, 'Pesquisar' %><%= form.search_field :q, value: params[:q], placeholder: 'Nome, região ou referência' %></div>
+    <% if @klass.column_names.include?('status') %><div><%= form.label :status, 'Situação' %><%= form.select :status, (@klass.distinct.limit(30).pluck(:status).compact.map { |status| [Backoffice::DisplayHelper::VALUES.fetch(status, status), status] }), { include_blank: 'Todas', selected: params[:status] } %></div><% end %>
+    <%= form.submit 'Filtrar', class: 'secondary' %>
+  <% end %>
+  <div class="table-scroll"><table><thead><tr><th>ID</th><% @spec[:columns].each do |field| %><th><%= field_label(field) %></th><% end %><th>Ações</th></tr></thead><tbody>
+    <% @records.each do |record| %><tr><td>#<%= record.id %></td><% @spec[:columns].each do |field| %><td><%= truncate(display_value(record, field), length: 85) %></td><% end %><td><%= link_to 'Detalhes', backoffice_record_path(resource: @resource, id: record.id), class: 'table-link' %></td></tr><% end %>
+    <% if @records.empty? %><tr><td colspan="<%= @spec[:columns].length + 2 %>" class="empty">Nenhum registro encontrado.</td></tr><% end %>
+  </tbody></table></div>
+  <div class="pagination"><span>Página <%= @page %> de <%= [(@total / 25.0).ceil, 1].max %></span><div class="actions"><% if @page > 1 %><%= link_to 'Anterior', backoffice_records_path(resource: @resource, q: params[:q], status: params[:status], page: @page - 1), class: 'secondary' %><% end %><% if @page * 25 < @total %><%= link_to 'Próxima', backoffice_records_path(resource: @resource, q: params[:q], status: params[:status], page: @page + 1), class: 'secondary' %><% end %></div></div>
+</section>

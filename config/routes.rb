@@ -1,4 +1,22 @@
 Rails.application.routes.draw do
+  get '/admin', to: redirect('/gestao')
+  namespace :backoffice, path: 'gestao' do
+    get '/', to: 'dashboard#index', as: :root
+    get '/entrar', to: 'sessions#new', as: :login
+    post '/entrar', to: 'sessions#create'
+    delete '/sair', to: 'sessions#destroy', as: :logout
+    get '/relatorios', to: 'reports#index', as: :reports
+    get '/comissoes', to: 'finance#commission', as: :commission
+    patch '/comissoes', to: 'finance#update_commission'
+    post '/reservas/:id/cancelar', to: 'finance#refund', as: :cancel_booking
+    get '/registros/:resource', to: 'records#index', as: :records
+    get '/registros/:resource/novo', to: 'records#new', as: :new_record
+    post '/registros/:resource', to: 'records#create'
+    get '/registros/:resource/:id', to: 'records#show', as: :record
+    get '/registros/:resource/:id/editar', to: 'records#edit', as: :edit_record
+    patch '/registros/:resource/:id', to: 'records#update'
+    delete '/registros/:resource/:id', to: 'records#destroy'
+  end
   mount ActionCable.server => '/cable'
   post '/cable_ticket', to: 'cable_tickets#create'
   get '/health', to: 'health#show'
@@ -29,6 +47,7 @@ Rails.application.routes.draw do
   post '/professional_profiles/guide', to: 'professional_profiles#create_guide'
   post '/professional_profiles/driver', to: 'professional_profiles#create_driver'
   get '/professional_profiles/mine', to: 'professional_profiles#mine'
+  get '/professional_profiles/commission', to: 'professional_profiles#commission'
   get '/professional_profiles/guides', to: 'professional_profiles#index_guides'
   get '/professional_profiles/drivers', to: 'professional_profiles#index_drivers'
   get '/professional_profiles/:kind/:id', to: 'professional_profiles#show'

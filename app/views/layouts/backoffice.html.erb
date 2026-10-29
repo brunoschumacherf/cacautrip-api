@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CACAU TRIP · Gestão</title>
+  <%= csrf_meta_tags %>
+  <%= stylesheet_link_tag '/backoffice.css' %>
+</head>
+<body>
+  <% if current_admin_user %>
+    <aside class="sidebar">
+      <a class="brand" href="<%= backoffice_root_path %>"><span class="logo">C</span><span>CACAU TRIP<small>PAINEL DE GESTÃO</small></span></a>
+      <nav aria-label="Áreas administrativas">
+        <%= link_to 'Visão geral', backoffice_root_path, class: ('selected' if controller_name == 'dashboard') %>
+        <% Backoffice::Registry::RESOURCES.each do |key, spec| %>
+          <% if can_read?(key) %><%= link_to spec[:label], backoffice_records_path(resource: key), class: ('selected' if @resource == key) %><% end %>
+        <% end %>
+        <% if current_admin_user.admin? %>
+          <%= link_to 'Comissões', backoffice_commission_path, class: ('selected' if controller_name == 'finance') %>
+          <%= link_to 'Relatórios e fluxo', backoffice_reports_path, class: ('selected' if controller_name == 'reports') %>
+        <% end %>
+      </nav>
+      <div class="staff"><strong><%= current_admin_user.name %></strong><small><%= current_admin_user.admin? ? 'Administrador' : 'Suporte' %></small><%= button_to 'Sair com segurança', backoffice_logout_path, method: :delete, class: 'secondary' %></div>
+    </aside>
+  <% end %>
+  <main class="<%= current_admin_user ? 'main' : 'login-main' %>">
+    <% flash.each do |kind, message| %><div role="alert" class="flash <%= kind == 'alert' ? 'error' : 'success' %>"><%= message %></div><% end %>
+    <%= yield %>
+  </main>
+  <footer><span>CACAU TRIP · Gestão interna</span><span>Horários exibidos no fuso da Bahia</span></footer>
+</body>
+</html>

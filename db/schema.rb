@@ -10,9 +10,35 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_080000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "admin_audits", force: :cascade do |t|
+    t.bigint "admin_user_id", null: false
+    t.string "action", null: false
+    t.string "record_type"
+    t.bigint "record_id"
+    t.jsonb "metadata", default: {}, null: false
+    t.string "request_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["admin_user_id"], name: "index_admin_audits_on_admin_user_id"
+    t.index ["record_type", "record_id"], name: "index_admin_audits_on_record_type_and_record_id"
+  end
+
+  create_table "admin_users", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "email", null: false
+    t.string "password_digest", null: false
+    t.string "role", default: "suporte", null: false
+    t.boolean "active", default: true, null: false
+    t.integer "session_version", default: 1, null: false
+    t.datetime "last_sign_in_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((email)::text)", name: "index_admin_users_on_lower_email", unique: true
+  end
 
   create_table "alerts", force: :cascade do |t|
     t.string "title", null: false
@@ -255,6 +281,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_080000) do
     t.index ["user_id"], name: "index_support_tickets_on_user_id"
   end
 
+  create_table "system_incidents", force: :cascade do |t|
+    t.string "error_class", null: false
+    t.string "location"
+    t.string "request_id"
+    t.text "trace"
+    t.string "status", default: "open", null: false
+    t.text "resolution"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["status", "created_at"], name: "index_system_incidents_on_status_and_created_at"
+  end
+
   create_table "trail_departures", force: :cascade do |t|
     t.bigint "trail_id", null: false
     t.datetime "starts_at", null: false
@@ -341,6 +379,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_080000) do
     t.index ["user_id"], name: "index_wallet_entries_on_user_id"
   end
 
+  add_foreign_key "admin_audits", "admin_users"
   add_foreign_key "bookings", "routes"
   add_foreign_key "bookings", "trail_departures"
   add_foreign_key "bookings", "users"

@@ -30,7 +30,15 @@ class Booking < ApplicationRecord
     as_json.merge(professional: profile&.as_json&.except('document_reference')&.merge('name' => provider&.name || profile.try(:name)),
       provider_id: provider&.id, tourist_name: user.name, review: review, fee_rate: PlatformSetting.commission.to_f,
       itinerary: trail_snapshot.present? ? trail_snapshot.fetch('stops', []) : route&.preferences.to_h.fetch('itinerary', []),
-      hold_expired: trail_hold_expired?)
+      hold_expired: trail_hold_expired?, commission: commission_breakdown)
+  end
+
+  def commission_breakdown
+    if ['approved', 'refunded'].include?(payment_status)
+      { gross: total_amount.to_f, fee: fee_amount.to_f, net: professional_amount.to_f, percent: nil, estimated: false }
+    else
+      CommissionQuote.call(total_amount || 0)
+    end
   end
 
   def trail_hold_expired?

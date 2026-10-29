@@ -28,5 +28,12 @@ module App
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+    # Sessão apenas para os controllers HTML do backoffice; a API continua Bearer.
+    config.middleware.use Rack::MethodOverride
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use ActionDispatch::Session::CookieStore,
+      key: '_cacautrip_staff', path: '/gestao', httponly: true,
+      same_site: :lax, secure: Rails.env.production?, expire_after: 8.hours
+    config.middleware.use ActionDispatch::Flash
   end
 end
