@@ -17,6 +17,7 @@ class MapDirectory
     Trail.visible.includes(:stops, guide_profile: :user).find_each do |trail|
       first = trail.stops.detect { |stop| stop.latitude && stop.longitude }
       points << { id: "trail:#{trail.id}", kind: 'trail', name: trail.title, category: 'Trilha guiada',
+        description: trail.description, image_url: trail.image_url,
         address: first&.address || trail.region, city: trail.region, latitude: first&.latitude&.to_f,
         longitude: first&.longitude&.to_f, approximate: first&.geocoding_approximate || false }
     end
@@ -26,6 +27,7 @@ class MapDirectory
         city = profile.region.to_s.split(/[,;\/]/).first.to_s.strip
         location = region(city)
         points << { id: "#{kind}:#{profile.id}", kind: kind, name: profile.user.name, city: profile.region,
+          description: profile.description, image_url: profile.image_url,
           address: "Área de atendimento: #{profile.region}", latitude: location['latitude'], longitude: location['longitude'],
           approximate: true, note: 'Área de atendimento. Não representa posição em tempo real.' }
       end
@@ -45,6 +47,7 @@ class MapDirectory
   def point(record, kind, category: nil, address: nil)
     location = kind == 'destination' && (record.latitude.nil? || record.longitude.nil?) ? region(record.city.to_s) : {}
     { id: "#{kind}:#{record.id}", kind: kind, name: record.name, category: category || record.try(:category),
+      description: record.try(:description), image_url: record.try(:image_url), opening_hours: record.try(:opening_hours), materials: record.try(:materials),
       address: address || record.try(:address), city: record.try(:city), latitude: record.latitude&.to_f || location['latitude'],
       longitude: record.longitude&.to_f || location['longitude'], approximate: record.geocoding_approximate || location.present?,
       phone: record.try(:phone), note: (location.present? ? 'Localização aproximada na cidade; endereço exato ainda não localizado.' : nil) }

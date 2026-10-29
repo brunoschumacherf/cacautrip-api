@@ -180,6 +180,8 @@ ep('post','/sustainability/redeem','Sustentabilidade','Trocar pontos por benefí
 S['MapPoint']=o('id'=>s,'kind'=>s(enum:%w[destination trail collection partner guide driver emergency]),'name'=>s,'category'=>s(nullable:true),'address'=>s(nullable:true),'city'=>s(nullable:true),'latitude'=>n,'longitude'=>n,'approximate'=>b,'note'=>s(nullable:true),'phone'=>s(nullable:true))
 ep('get','/map_points','Catálogo e destinos','Listar locais e serviços do mapa','Independente da paginação do catálogo. Destinos ativos, trilhas públicas, coleta, parceiros, profissionais publicados/verificados e apoio cadastrado. Guia/motorista representa área de atendimento, não posição em tempo real. approximate identifica resultados por rua/região. category distingue hospitais/delegacias. Endereços sem coordenadas ficam em unlocated; o cliente pode atualizar após o processamento. Não é uma busca genérica de estabelecimentos externos.',auth: :public,query:[param('q',s,'Busca por nome, endereço, cidade e categoria.'),param('kinds',s,'Tipos separados por vírgula: destination,trail,collection,partner,guide,driver,emergency.')],output:o('points'=>a(ref('MapPoint')),'total'=>i,'unlocated_count'=>i,'unlocated'=>a(o('id'=>s,'kind'=>s,'name'=>s,'address'=>s(nullable:true))),'counts'=>o),errors:[422])
 
+S['MapPoint']['properties'].merge!('description'=>s(nullable:true),'image_url'=>s(nullable:true),'opening_hours'=>s(nullable:true),'materials'=>s(nullable:true))
+
 # Administração JSON legada: User.admin, independente de AdminUser do painel.
 legacy_fields={
  'users'=>%w[name suspended], 'guides'=>%w[moderation_status verified_documents available], 'drivers'=>%w[moderation_status verified_cnh available],

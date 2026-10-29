@@ -9106,6 +9106,18 @@ components:
         phone:
           type: string
           nullable: true
+        description:
+          type: string
+          nullable: true
+        image_url:
+          type: string
+          nullable: true
+        opening_hours:
+          type: string
+          nullable: true
+        materials:
+          type: string
+          nullable: true
     LegacyRecordInput:
       type: object
       properties:
