@@ -14,11 +14,13 @@ class User < ApplicationRecord
   has_many :wallet_entries
   has_many :subscriptions
   has_many :support_tickets
+  has_many :eco_redemptions
+  has_many :eco_point_entries
   validates :active_role, inclusion: { in: ['tourist', 'guide', 'driver'] }
 
   def public_profile
     as_json(only: [:id, :name, :email, :gov_verified, :active_role, :preferences, :admin]).merge(
-      google_connected: google_uid.present?, guide_profile: guide_profile, driver_profile: driver_profile,
+      eco_points: eco_points, google_connected: google_uid.present?, guide_profile: guide_profile, driver_profile: driver_profile,
       roles: ['tourist', ('guide' if guide_profile), ('driver' if driver_profile)].compact)
   end
 end

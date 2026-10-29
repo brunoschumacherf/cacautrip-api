@@ -17,7 +17,8 @@ class AdminController < ApplicationController
 
   def dashboard
     render json: { users: User.count, bookings: Booking.count, completed: Booking.where(status: 'completed').count,
-      gross: Booking.where(payment_status: 'approved').sum(:total_amount), fees: Booking.where(payment_status: 'approved').sum(:fee_amount),
+      gross: Booking.where(payment_status: 'approved').sum(Arel.sql('total_amount - discount_amount')), fees: Booking.where(payment_status: 'approved').sum(:fee_amount),
+      eco_discounts: Booking.where(payment_status: 'approved').sum(:discount_amount),
       open_reports: Report.where(status: 'open').count, open_tickets: SupportTicket.where(status: 'open').count,
       commission: PlatformSetting.commission, visits_by_destination: Route.group(:destination).count,
       bookings_by_status: Booking.group(:status).count, signups_by_day: User.group('DATE(created_at)').count,

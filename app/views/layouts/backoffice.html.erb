@@ -12,10 +12,17 @@
     <aside class="sidebar">
       <a class="brand" href="<%= backoffice_root_path %>"><span class="logo">C</span><span>CACAU TRIP<small>PAINEL DE GESTÃO</small></span></a>
       <nav aria-label="Áreas administrativas">
+        <%= link_to 'Códigos de coleta', backoffice_eco_codes_path, class: ('selected' if controller_name == 'eco_codes') %>
+        <% unless current_admin_user.collection_operator? %>
+        <%= link_to 'Validar benefício verde', backoffice_eco_vouchers_path, class: ('selected' if controller_name == 'eco_vouchers') %>
         <%= link_to 'Atendimento humano', backoffice_support_chats_path, class: ('selected' if controller_name == 'support_chats') %>
         <%= link_to 'Visão geral', backoffice_root_path, class: ('selected' if controller_name == 'dashboard') %>
+        <% end %>
+        <% if current_admin_user.admin? %>
+          <%= link_to 'Pontos de coleta', backoffice_collection_points_path, class: ('selected' if @resource == 'eco_collection_points') %>
+        <% end %>
         <% Backoffice::Registry::RESOURCES.each do |key, spec| %>
-          <% next if key == 'tickets' %>
+          <% next if %w[tickets eco_collection_points].include?(key) %>
           <% if can_read?(key) %><%= link_to spec[:label], backoffice_records_path(resource: key), class: ('selected' if @resource == key) %><% end %>
         <% end %>
         <% if current_admin_user.admin? %>
@@ -23,7 +30,7 @@
           <%= link_to 'Relatórios e fluxo', backoffice_reports_path, class: ('selected' if controller_name == 'reports') %>
         <% end %>
       </nav>
-      <div class="staff"><strong><%= current_admin_user.name %></strong><small><%= current_admin_user.admin? ? 'Administrador' : 'Suporte' %></small><%= button_to 'Sair com segurança', backoffice_logout_path, method: :delete, class: 'secondary' %></div>
+      <div class="staff"><strong><%= current_admin_user.name %></strong><small><%= Backoffice::DisplayHelper::VALUES.fetch(current_admin_user.role, current_admin_user.role) %></small><%= button_to 'Sair com segurança', backoffice_logout_path, method: :delete, class: 'secondary' %></div>
     </aside>
   <% end %>
   <main class="<%= current_admin_user ? 'main' : 'login-main' %>">

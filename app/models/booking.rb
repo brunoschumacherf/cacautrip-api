@@ -4,6 +4,7 @@ class Booking < ApplicationRecord
   belongs_to :trail_departure, optional: true
   has_one :review
   has_many :wallet_entries
+  has_one :eco_redemption
   TYPES = { 'Guia' => 'GuideProfile', 'Motorista' => 'DriverProfile', 'Passeio' => 'Destination', 'Parceiro' => 'Destination' }.freeze
   validates :service_type, inclusion: { in: TYPES.keys }
   validates :total_amount, numericality: { greater_than: 0 }
@@ -30,7 +31,12 @@ class Booking < ApplicationRecord
     as_json.merge(professional: profile&.as_json&.except('document_reference')&.merge('name' => provider&.name || profile.try(:name)),
       provider_id: provider&.id, tourist_name: user.name, review: review, fee_rate: PlatformSetting.commission.to_f,
       itinerary: trail_snapshot.present? ? trail_snapshot.fetch('stops', []) : route&.preferences.to_h.fetch('itinerary', []),
-      hold_expired: trail_hold_expired?, commission: commission_breakdown)
+      hold_expired: trail_hold_expired?, commission: commission_breakdown, amount_due: amount_due.to_f,
+      platform_net_amount: (fee_amount.to_d - discount_amount).to_f)
+  end
+
+  def amount_due
+    total_amount - discount_amount
   end
 
   def commission_breakdown
@@ -47,6 +53,7 @@ class Booking < ApplicationRecord
 
   def approve_payment!
     return if payment_status == 'approved'
+    EcoCheckout.consume!(self)
     fee = (total_amount * PlatformSetting.commission).round(2)
     update!(status: 'confirmed', payment_status: 'approved', fee_amount: fee, professional_amount: total_amount - fee)
     if provider

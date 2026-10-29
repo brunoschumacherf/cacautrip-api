@@ -32,6 +32,7 @@ module Backoffice
             raise ActiveRecord::RecordInvalid, booking
           end
           booking.wallet_entries.where(kind: 'earning').update_all(status: 'cancelled')
+          EcoCheckout.release!(booking)
           booking.update!(status: 'cancelled', payment_status: booking.payment_status == 'approved' ? 'refunded' : 'cancelled')
           audit!('finance.booking_cancel', booking, reason: reason.truncate(500))
         end

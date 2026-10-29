@@ -1,0 +1,15 @@
+<header class="page-heading"><div><p class="eyebrow">SUSTENTABILIDADE</p><h1>Códigos de coleta</h1><p>Após a entrega dos materiais, gere um código de uso único para o cliente transformar em pontos.</p></div></header>
+<section class="panel form-panel"><h2>Registrar uma entrega</h2>
+  <% if @points.empty? %><p class="callout">Nenhum ponto de coleta ativo disponível. Solicite ao administrador o cadastro ou a vinculação do ponto.</p><% else %>
+    <%= form_with url: backoffice_eco_codes_path, method: :post do |form| %>
+      <div class="field"><%= form.label :eco_collection_point_id, 'Ponto de coleta' %><%= form.select :eco_collection_point_id, @points.map { |point| ["#{point.name} · #{point.city}", point.id] } %></div>
+      <div class="field"><%= form.label :points, 'Quantos pontos esta entrega vale?' %><%= form.number_field :points, min: 1, max: 100000, step: 1, required: true, placeholder: 'Ex.: 100' %></div>
+      <div class="field"><%= form.label :expires_at, 'Código válido até (vazio = 30 dias)' %><%= form.datetime_local_field :expires_at %></div>
+      <%= form.submit 'Gerar código da coleta', class: 'primary' %>
+    <% end %>
+  <% end %>
+</section>
+<section class="panel"><h2><%= current_admin_user.admin? ? 'Todos os códigos' : 'Códigos que emiti' %></h2><div class="table-scroll"><table><thead><tr><th>Código para entregar ao cliente</th><th>Ponto</th><th>Pontos</th><th>Situação</th><th>Validade</th><th></th></tr></thead><tbody>
+  <% @codes.each do |code| %><tr><td><strong class="eco-code"><%= code.code %></strong><small>Emitido por <%= code.issuer.name %></small></td><td><%= code.eco_collection_point.name %></td><td><%= code.points %></td><td><%= code.claimed_at ? 'Resgatado' : code.voided_at ? 'Cancelado' : code.expires_at <= Time.current ? 'Expirado' : 'Disponível' %></td><td><%= code.expires_at.in_time_zone('America/Bahia').strftime('%d/%m/%Y %H:%M') %></td><td><% if current_admin_user.admin? && !code.claimed_at && !code.voided_at %><%= button_to 'Cancelar código', void_backoffice_eco_code_path(code), method: :post, class: 'secondary' %><% end %></td></tr><% end %>
+  <% if @codes.empty? %><tr><td colspan="6" class="empty">Nenhum código emitido.</td></tr><% end %>
+</tbody></table></div><div class="pagination"><% if @page > 1 %><%= link_to 'Anterior', backoffice_eco_codes_path(page: @page - 1), class: 'secondary' %><% end %><span>Página <%= @page %></span><% if @more %><%= link_to 'Próxima', backoffice_eco_codes_path(page: @page + 1), class: 'secondary' %><% end %></div></section>

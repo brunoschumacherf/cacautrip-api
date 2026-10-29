@@ -4,6 +4,7 @@ module Backoffice
     helper Backoffice::DisplayHelper
     protect_from_forgery with: :exception
     before_action :require_staff!
+    before_action :restrict_collection_operator!
     helper_method :current_admin_user, :can_read?, :can_write?
 
     rescue_from ActiveRecord::RecordNotFound do
@@ -31,11 +32,17 @@ module Backoffice
     end
 
     def can_read?(resource)
-      current_admin_user&.admin? || Backoffice::Registry::SUPPORT_READ.include?(resource.to_s)
+      current_admin_user&.admin? || (current_admin_user&.suporte? && Backoffice::Registry::SUPPORT_READ.include?(resource.to_s))
     end
 
     def can_write?(resource)
-      current_admin_user&.admin? || Backoffice::Registry::SUPPORT_WRITE.include?(resource.to_s)
+      current_admin_user&.admin? || (current_admin_user&.suporte? && Backoffice::Registry::SUPPORT_WRITE.include?(resource.to_s))
+    end
+
+    def restrict_collection_operator!
+      return unless current_admin_user&.collection_operator?
+      return if %w[eco_codes sessions].include?(controller_name)
+      request.get? ? redirect_to(backoffice_eco_codes_path) : head(:forbidden)
     end
 
     def require_administrator!

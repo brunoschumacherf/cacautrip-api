@@ -1,6 +1,13 @@
 Rails.application.routes.draw do
   get '/admin', to: redirect('/gestao')
   namespace :backoffice, path: 'gestao' do
+    get '/pontos-de-coleta', to: 'records#index', defaults: { resource: 'eco_collection_points' }, as: :collection_points
+    get '/pontos-de-coleta/novo', to: 'records#new', defaults: { resource: 'eco_collection_points' }, as: :new_collection_point
+    resources :eco_codes, path: 'codigos-de-coleta', only: [:index, :create] do
+      post :void, on: :member
+    end
+    get '/validar-beneficio', to: 'eco_vouchers#index', as: :eco_vouchers
+    post '/validar-beneficio', to: 'eco_vouchers#consume'
     resources :support_chats, path: 'atendimentos', only: [:index, :show] do
       member do
         get :messages, path: 'mensagens'
@@ -29,6 +36,11 @@ Rails.application.routes.draw do
   get '/health', to: 'health#show'
   post '/signup', to: 'authentication#signup'
   post '/login', to: 'authentication#login'
+  get '/sustainability', to: 'sustainability#index'
+  get '/sustainability/overview', to: 'sustainability#overview'
+  post '/sustainability/claim', to: 'sustainability#claim'
+  post '/sustainability/redeem', to: 'sustainability#redeem'
+  get '/bookings/:booking_id/discounts', to: 'sustainability#discounts'
   post '/auth/google/start', to: 'google_authentication#start'
   get '/auth/google/callback', to: 'google_authentication#callback'
   post '/auth/google/finish', to: 'google_authentication#finish'

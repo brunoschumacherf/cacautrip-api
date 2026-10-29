@@ -12,8 +12,9 @@ module Backoffice
       bookings = Booking.where(created_at: range)
       @totals = { 'Reservas no período' => bookings.count, 'Serviços concluídos' => bookings.where(status: 'completed').count,
         'Novos usuários' => User.where(created_at: range).count, 'Avaliações publicadas' => Review.where(created_at: range, hidden: false).count }
-      @gross = bookings.where(payment_status: 'approved').sum(:total_amount)
+      @gross = bookings.where(payment_status: 'approved').sum(Arel.sql('total_amount - discount_amount'))
       @fees = bookings.where(payment_status: 'approved').sum(:fee_amount)
+      @eco_cost = bookings.where(payment_status: 'approved').sum(:discount_amount)
       @series = {
         'Reservas por dia' => bookings.group('DATE(created_at)').order(Arel.sql('DATE(created_at)')).count,
         'Reservas por situação' => bookings.group(:status).count,
@@ -30,6 +31,8 @@ module Backoffice
             @totals.each { |label, count| output << [label, '', count] }
             output << ['Total aprovado (R$)', '', @gross.to_s('F')]
             output << ['Comissões (R$)', '', @fees.to_s('F')]
+            output << ['Benefícios custeados (R$)', '', @eco_cost.to_s('F')]
+            output << ['Comissões após benefícios (R$)', '', (@fees - @eco_cost).to_s('F')]
             @series.each { |label, rows| rows.each { |group, count| output << [label, safe_cell(group), count] } }
           end
           send_data "\uFEFF#{csv}", filename: "cacautrip-relatorios-#{@from}-#{@to}.csv", type: 'text/csv; charset=utf-8'

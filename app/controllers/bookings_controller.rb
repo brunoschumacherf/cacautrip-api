@@ -1,5 +1,8 @@
 class BookingsController < ApplicationController
   before_action :authenticate_user!
+  rescue_from EcoCheckout::Invalid do |error|
+    render_error(error.message)
+  end
   around_action :lock_trail_departure, only: [:pay, :payment_status, :cancel, :complete]
 
   def index
@@ -105,6 +108,7 @@ class BookingsController < ApplicationController
     booking.with_lock do
       return render_error('Reserva não pode ser cancelada', :conflict) if ['completed', 'cancelled', 'rejected'].include?(booking.status)
       booking.wallet_entries.where(kind: 'earning').update_all(status: 'cancelled')
+      EcoCheckout.release!(booking)
       booking.update!(status: 'cancelled', payment_status: booking.payment_status == 'approved' ? 'refunded' : 'cancelled')
     end
     render json: { booking: booking.details, message: 'Reserva cancelada.' }
@@ -131,10 +135,16 @@ class BookingsController < ApplicationController
       return render_error('Aguarde o aceite da proposta', :conflict) unless booking.status == 'approved_waiting_payment'
       method = params[:payment_method]
       return render_error('Escolha Pix ou cartão') unless ['pix', 'credit_card'].include?(method)
-      unless booking.payment_method == method && method == 'pix'
+      discount_changed = false
+      if params.key?(:redemption_id)
+        previous_discount = [booking.discount_amount, booking.eco_discount['redemption_id']]
+        EcoCheckout.apply!(booking, params[:redemption_id])
+        discount_changed = previous_discount != [booking.discount_amount, booking.eco_discount['redemption_id']]
+      end
+      unless booking.payment_method == method && method == 'pix' && !discount_changed
         booking.update!(payment_method: method, payment_polls: 0)
       end
-      booking.approve_payment! if method == 'credit_card'
+      booking.approve_payment! if method == 'credit_card' || booking.amount_due.zero?
     end
     render json: { booking: booking.details, pix_code: "PIX-MOCK-CACAUTRIP-#{booking.id}" }
   end

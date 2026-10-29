@@ -1,0 +1,17 @@
+<p class="callout">Informe o endereço real do local onde os materiais serão recebidos. Nome, cidade e endereço completo são obrigatórios.</p>
+<h2>Local de coleta</h2>
+<div class="field"><%= form.label :name, 'Nome do ponto de coleta' %><%= form.text_field :name, value: @record.name, required: true, maxlength: 255, placeholder: 'Nome do estabelecimento ou da unidade de coleta' %></div>
+<div class="field"><%= form.label :city, 'Cidade' %><%= form.text_field :city, value: @record.city, required: true, maxlength: 255, autocomplete: 'address-level2' %></div>
+<div class="field"><%= form.label :address, 'Endereço completo' %><%= form.text_area :address, value: @record.address, required: true, maxlength: 255, rows: 3, autocomplete: 'street-address', placeholder: 'Rua, número, bairro e complemento ou referência' %></div>
+<div class="field"><%= form.label :description, 'Orientações para encontrar o local' %><%= form.text_area :description, value: @record.description, rows: 3, placeholder: 'Entrada, referência e orientações para a entrega' %></div>
+<h2>Recebimento dos materiais</h2>
+<div class="field"><%= form.label :materials, 'Materiais aceitos' %><%= form.text_field :materials, value: @record.materials, maxlength: 255, placeholder: 'Informe apenas os materiais que o ponto recebe' %></div>
+<div class="field"><%= form.label :opening_hours, 'Dias e horários de atendimento' %><%= form.text_field :opening_hours, value: @record.opening_hours, maxlength: 255, placeholder: 'Dias da semana e horários para receber as entregas' %></div>
+<div class="field"><%= form.label :image_url, 'Foto do ponto (URL, opcional)' %><%= form.url_field :image_url, value: @record.image_url, maxlength: 255, placeholder: 'https://' %></div>
+<h2>Localização no mapa</h2>
+<p class="muted">Opcional. Informe as duas coordenadas para mostrar o local no mapa do app. O endereço continua visível mesmo sem coordenadas.</p>
+<div class="two-columns">
+  <div class="field"><%= form.label :latitude, 'Latitude' %><%= form.number_field :latitude, value: @record.latitude, min: -90, max: 90, step: 'any' %></div>
+  <div class="field"><%= form.label :longitude, 'Longitude' %><%= form.number_field :longitude, value: @record.longitude, min: -180, max: 180, step: 'any' %></div>
+</div>
+<div class="field"><label class="check"><%= form.check_box :active, checked: @record.active %><span>Exibir este ponto de coleta no app</span></label></div>

@@ -24,7 +24,7 @@ module Backoffice
       user.update!(last_sign_in_at: Time.current)
       @current_admin_user = user
       audit!('session.login')
-      redirect_to backoffice_root_path, notice: 'Bem-vindo ao painel.'
+      redirect_to (user.collection_operator? ? backoffice_eco_codes_path : backoffice_root_path), notice: 'Bem-vindo ao painel.'
     end
 
     def destroy

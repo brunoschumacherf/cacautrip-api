@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_110000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -37,7 +37,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_110000) do
     t.datetime "last_sign_in_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "eco_collection_point_id"
     t.index "lower((email)::text)", name: "index_admin_users_on_lower_email", unique: true
+    t.index ["eco_collection_point_id"], name: "index_admin_users_on_eco_collection_point_id"
   end
 
   create_table "alerts", force: :cascade do |t|
@@ -80,9 +82,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_110000) do
     t.bigint "trail_departure_id"
     t.jsonb "trail_snapshot", default: {}, null: false
     t.datetime "hold_expires_at"
+    t.decimal "discount_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.jsonb "eco_discount", default: {}, null: false
     t.index ["route_id"], name: "index_bookings_on_route_id"
     t.index ["trail_departure_id"], name: "index_bookings_on_trail_departure_id"
     t.index ["user_id"], name: "index_bookings_on_user_id"
+    t.check_constraint "discount_amount >= 0::numeric AND discount_amount <= total_amount", name: "booking_discount_within_total"
   end
 
   create_table "conversations", force: :cascade do |t|
@@ -141,6 +146,104 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_110000) do
     t.text "description"
     t.string "image_url"
     t.index ["user_id"], name: "index_driver_profiles_on_user_id"
+  end
+
+  create_table "eco_collection_codes", force: :cascade do |t|
+    t.bigint "eco_collection_point_id", null: false
+    t.bigint "issuer_id", null: false
+    t.bigint "claimed_by_id"
+    t.string "code", null: false
+    t.integer "points", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "claimed_at"
+    t.datetime "voided_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["claimed_by_id"], name: "index_eco_collection_codes_on_claimed_by_id"
+    t.index ["code"], name: "index_eco_collection_codes_on_code", unique: true
+    t.index ["eco_collection_point_id"], name: "index_eco_collection_codes_on_eco_collection_point_id"
+    t.index ["issuer_id"], name: "index_eco_collection_codes_on_issuer_id"
+  end
+
+  create_table "eco_collection_points", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "city", null: false
+    t.string "address", null: false
+    t.text "description"
+    t.string "materials"
+    t.string "opening_hours"
+    t.string "image_url"
+    t.decimal "latitude", precision: 10, scale: 7
+    t.decimal "longitude", precision: 10, scale: 7
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "eco_partners", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "city", null: false
+    t.string "address", null: false
+    t.text "description"
+    t.string "image_url"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "eco_point_entries", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "eco_collection_code_id"
+    t.bigint "eco_redemption_id"
+    t.integer "amount", null: false
+    t.string "description", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["eco_collection_code_id"], name: "index_eco_point_entries_on_eco_collection_code_id", unique: true
+    t.index ["eco_redemption_id"], name: "index_eco_point_entries_on_eco_redemption_id", unique: true
+    t.index ["user_id"], name: "index_eco_point_entries_on_user_id"
+  end
+
+  create_table "eco_redemptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "eco_reward_id", null: false
+    t.bigint "booking_id"
+    t.bigint "validated_by_id"
+    t.string "code", null: false
+    t.string "status", default: "available", null: false
+    t.string "request_key", null: false
+    t.jsonb "benefit", default: {}, null: false
+    t.integer "points_cost", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["booking_id"], name: "index_eco_redemptions_on_booking_id", unique: true
+    t.index ["code"], name: "index_eco_redemptions_on_code", unique: true
+    t.index ["eco_reward_id"], name: "index_eco_redemptions_on_eco_reward_id"
+    t.index ["user_id", "request_key"], name: "index_eco_redemptions_on_user_id_and_request_key", unique: true
+    t.index ["user_id"], name: "index_eco_redemptions_on_user_id"
+    t.index ["validated_by_id"], name: "index_eco_redemptions_on_validated_by_id"
+  end
+
+  create_table "eco_rewards", force: :cascade do |t|
+    t.bigint "eco_partner_id"
+    t.string "title", null: false
+    t.text "description"
+    t.string "image_url"
+    t.string "scope", null: false
+    t.string "discount_type", default: "fixed", null: false
+    t.decimal "discount_value", precision: 12, scale: 2, null: false
+    t.decimal "minimum_amount", precision: 12, scale: 2, default: "0.0", null: false
+    t.decimal "maximum_discount", precision: 12, scale: 2
+    t.integer "points_cost", null: false
+    t.integer "stock"
+    t.datetime "expires_at"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["eco_partner_id"], name: "index_eco_rewards_on_eco_partner_id"
+    t.check_constraint "stock IS NULL OR stock >= 0", name: "eco_reward_stock_nonnegative"
   end
 
   create_table "emergency_points", force: :cascade do |t|
@@ -398,7 +501,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_110000) do
     t.jsonb "preferences", default: {}, null: false
     t.string "google_uid"
     t.boolean "suspended", default: false
+    t.integer "eco_points", default: 0, null: false
     t.index ["google_uid"], name: "index_users_on_google_uid", unique: true, where: "(google_uid IS NOT NULL)"
+    t.check_constraint "eco_points >= 0", name: "eco_points_nonnegative"
   end
 
   create_table "wallet_entries", force: :cascade do |t|
@@ -418,6 +523,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_110000) do
   end
 
   add_foreign_key "admin_audits", "admin_users"
+  add_foreign_key "admin_users", "eco_collection_points"
   add_foreign_key "bookings", "routes"
   add_foreign_key "bookings", "trail_departures"
   add_foreign_key "bookings", "users"
@@ -428,6 +534,17 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_110000) do
   add_foreign_key "conversations", "users", column: "tourist_id"
   add_foreign_key "destinations", "users", column: "provider_id"
   add_foreign_key "driver_profiles", "users"
+  add_foreign_key "eco_collection_codes", "admin_users", column: "issuer_id"
+  add_foreign_key "eco_collection_codes", "eco_collection_points"
+  add_foreign_key "eco_collection_codes", "users", column: "claimed_by_id"
+  add_foreign_key "eco_point_entries", "eco_collection_codes"
+  add_foreign_key "eco_point_entries", "eco_redemptions"
+  add_foreign_key "eco_point_entries", "users"
+  add_foreign_key "eco_redemptions", "admin_users", column: "validated_by_id"
+  add_foreign_key "eco_redemptions", "bookings"
+  add_foreign_key "eco_redemptions", "eco_rewards"
+  add_foreign_key "eco_redemptions", "users"
+  add_foreign_key "eco_rewards", "eco_partners"
   add_foreign_key "google_auth_flows", "users", column: "authenticated_user_id", on_delete: :nullify
   add_foreign_key "google_auth_flows", "users", column: "link_user_id", on_delete: :nullify
   add_foreign_key "guide_profiles", "users"

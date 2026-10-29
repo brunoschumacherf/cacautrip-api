@@ -1,9 +1,13 @@
-<header class="page-heading"><div><p class="eyebrow"><%= @spec[:label] %></p><h1><%= @record.persisted? ? "Editar registro ##{@record.id}" : 'Novo registro' %></h1></div><%= link_to 'Voltar', backoffice_records_path(resource: @resource), class: 'secondary' %></header>
+<header class="page-heading"><div><p class="eyebrow"><%= @spec[:label] %></p><h1><%= @resource == 'eco_collection_points' ? (@record.persisted? ? 'Editar ponto de coleta' : 'Novo ponto de coleta') : (@record.persisted? ? "Editar registro ##{@record.id}" : 'Novo registro') %></h1></div><%= link_to 'Voltar', (@resource == 'eco_collection_points' ? backoffice_collection_points_path : backoffice_records_path(resource: @resource)), class: 'secondary' %></header>
 <section class="panel form-panel">
   <% if @record.errors.any? %><div class="flash error" role="alert"><strong>Revise os dados:</strong><ul><% @record.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul></div><% end %>
   <% if %w[guides drivers].include?(@resource) %><p class="callout">Para aprovar, escolha “Publicado” e confirme o campo de documentação. A conta precisa estar autenticada no Gov.br e ter referência documental.</p><% end %>
-  <% if @resource == 'admin_users' %><p class="callout">Administradores têm acesso integral. Suporte atua no atendimento e moderação, sem alterações financeiras ou gestão da equipe. Senhas exigem pelo menos 12 caracteres.</p><% end %>
+  <% if @resource == 'admin_users' %><p class="callout">Administradores têm acesso integral. Suporte atende usuários e emite códigos de coleta. Operador de coleta acessa somente a emissão de códigos do ponto vinculado. Escolha um ponto para esse papel. Senhas exigem pelo menos 12 caracteres.</p><% end %>
+  <% if @resource == 'eco_rewards' %><p class="callout">Defina o custo em pontos, o desconto e o destino de uso. Parceiros exigem estabelecimento e endereço cadastrados. Estoque vazio significa ilimitado. Cupons resgatados valem até 30 dias ou até a validade do benefício, o que ocorrer primeiro. Descontos do app são custeados pela plataforma e preservam o líquido do profissional.</p><% end %>
   <%= form_with scope: :record, url: @record.persisted? ? backoffice_record_path(resource: @resource, id: @record.id) : backoffice_records_path(resource: @resource), method: @record.persisted? ? :patch : :post, local: true do |form| %>
+    <% if @resource == 'eco_collection_points' %>
+      <%= render 'collection_point_fields', form: form %>
+    <% else %>
     <% @spec[:edit].each do |field| %>
       <% options = field_options(@resource, field) %>
       <div class="field">
@@ -11,7 +15,11 @@
           <label class="check"><%= form.check_box field, checked: @record.public_send(field) %><span><%= field_label(field) %></span></label>
         <% else %>
           <%= form.label field, field_label(field) %>
-          <% if field.start_with?('password') %>
+          <% if field == 'eco_collection_point_id' %>
+            <%= form.collection_select field, EcoCollectionPoint.order(:city, :name), :id, :name, { selected: @record.public_send(field), include_blank: 'Sem ponto vinculado' } %>
+          <% elsif field == 'eco_partner_id' %>
+            <%= form.collection_select field, EcoPartner.order(:city, :name), :id, :name, { selected: @record.public_send(field), include_blank: 'Benefício dentro do app' } %>
+          <% elsif field.start_with?('password') %>
             <%= form.password_field field, autocomplete: 'new-password', minlength: 12, required: !@record.persisted? %>
           <% elsif options %>
             <%= form.select field, options.map { |value| [Backoffice::DisplayHelper::VALUES.fetch(value, value), value] }, { selected: @record.public_send(field) } %>
@@ -29,6 +37,7 @@
         <% end %>
       </div>
     <% end %>
-    <div class="actions"><%= form.submit 'Salvar alterações', class: 'primary' %><%= link_to 'Cancelar', backoffice_records_path(resource: @resource), class: 'secondary' %></div>
+    <% end %>
+    <div class="actions"><%= form.submit (@resource == 'eco_collection_points' ? 'Salvar ponto de coleta' : 'Salvar alterações'), class: 'primary' %><%= link_to 'Cancelar', (@resource == 'eco_collection_points' ? backoffice_collection_points_path : backoffice_records_path(resource: @resource)), class: 'secondary' %></div>
   <% end %>
 </section>

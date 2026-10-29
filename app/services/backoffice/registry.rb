@@ -3,6 +3,9 @@ module Backoffice
     SUPPORT_READ = %w[users bookings tickets reports reviews messages incidents alerts emergency_points].freeze
     SUPPORT_WRITE = %w[tickets reports reviews messages incidents].freeze
     RESOURCES = {
+      'eco_collection_points' => { model: 'EcoCollectionPoint', label: 'Pontos de coleta', create_label: 'Adicionar ponto de coleta', columns: %w[name city address active], edit: %w[name city address description materials opening_hours image_url latitude longitude active], search: %w[name city address], create: true },
+      'eco_partners' => { model: 'EcoPartner', label: 'Parceiros sustentáveis', columns: %w[name city address active], edit: %w[name city address description image_url active], search: %w[name city address], create: true },
+      'eco_rewards' => { model: 'EcoReward', label: 'Benefícios e descontos verdes', columns: %w[title scope points_cost discount_type discount_value stock active], edit: %w[title description scope eco_partner_id image_url discount_type discount_value minimum_amount maximum_discount points_cost stock expires_at active], search: %w[title description], create: true },
       'users' => { model: 'User', label: 'Usuários', columns: %w[name email suspended created_at], edit: %w[name email suspended], search: %w[name email] },
       'guides' => { model: 'GuideProfile', label: 'Guias', columns: %w[user_id region moderation_status verified_documents available], edit: %w[moderation_status verified_documents available region specialization languages description services document_reference], search: %w[region specialization] },
       'drivers' => { model: 'DriverProfile', label: 'Motoristas', columns: %w[user_id vehicle_model license_plate capacity moderation_status verified_cnh], edit: %w[moderation_status verified_cnh available vehicle_model license_plate capacity region services document_reference], search: %w[vehicle_model license_plate region] },
@@ -19,15 +22,17 @@ module Backoffice
       'subscriptions' => { model: 'Subscription', label: 'Assinaturas', columns: %w[user_id professional_type plan status auto_renew renews_at], edit: %w[status auto_renew], search: %w[plan status] },
       'subscription_orders' => { model: 'SubscriptionOrder', label: 'Pagamentos de planos', columns: %w[user_id plan amount status payment_method paid_at], edit: [], search: %w[plan status] },
       'incidents' => { model: 'SystemIncident', label: 'Falhas técnicas', columns: %w[error_class location status created_at], edit: %w[status resolution], search: %w[error_class location] },
-      'admin_users' => { model: 'AdminUser', label: 'Equipe e permissões', columns: %w[name email role active last_sign_in_at], edit: %w[name email role active password password_confirmation], search: %w[name email], create: true },
+      'admin_users' => { model: 'AdminUser', label: 'Equipe e permissões', columns: %w[name email role active last_sign_in_at], edit: %w[name email role eco_collection_point_id active password password_confirmation], search: %w[name email], create: true },
       'audits' => { model: 'AdminAudit', label: 'Auditoria', columns: %w[admin_user_id action record_type record_id created_at], edit: [], search: %w[action record_type] }
     }.freeze
     BOOLEAN_FIELDS = %w[suspended active available accessible guide_required verified_documents verified_cnh hidden auto_renew].freeze
     TEXT_FIELDS = %w[description services body rules message reason reply resolution safety_notes cancellation_policy what_to_bring included not_included trace].freeze
-    NUMBER_FIELDS = %w[latitude longitude price capacity duration_minutes provider_id].freeze
+    NUMBER_FIELDS = %w[latitude longitude price capacity duration_minutes provider_id discount_value minimum_amount maximum_discount points_cost stock].freeze
     OPTIONS = {
       'moderation_status' => %w[pending published rejected hidden],
-      'role' => %w[admin suporte],
+      'role' => %w[admin suporte operador_coleta],
+      'eco_rewards.scope' => %w[partner trail driver],
+      'discount_type' => %w[fixed percent],
       'reports.status' => %w[open resolved dismissed],
       'tickets.status' => %w[open answered closed],
       'subscriptions.status' => %w[active cancelled],

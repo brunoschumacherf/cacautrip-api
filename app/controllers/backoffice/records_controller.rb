@@ -20,7 +20,7 @@ module Backoffice
     def new
       return head :forbidden unless @spec[:create]
       @record = @klass.new
-      if @resource == 'admin_users' && %w[admin suporte].include?(params[:role])
+      if @resource == 'admin_users' && %w[admin suporte operador_coleta].include?(params[:role])
         @record.role = params[:role]
       end
       render :form

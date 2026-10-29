@@ -1,6 +1,7 @@
 module Backoffice
   module DisplayHelper
     LABELS = {
+      'eco_collection_point_id'=>'Ponto de coleta vinculado', 'eco_partner_id'=>'Estabelecimento parceiro', 'materials'=>'Materiais aceitos', 'points_cost'=>'Pontos para resgatar', 'stock'=>'Quantidade disponível (vazio = ilimitado)', 'scope'=>'Onde usar', 'discount_type'=>'Formato do desconto', 'discount_value'=>'Desconto (R$ ou %)', 'minimum_amount'=>'Valor mínimo da compra (R$)', 'maximum_discount'=>'Limite do desconto (R$, opcional)',
       'name'=>'Nome', 'email'=>'E-mail', 'role'=>'Papel', 'active'=>'Ativo', 'suspended'=>'Suspenso', 'created_at'=>'Criado em', 'updated_at'=>'Atualizado em',
       'user_id'=>'Usuário', 'admin_user_id'=>'Operador', 'region'=>'Região', 'moderation_status'=>'Situação do perfil', 'verified_documents'=>'Documentos aprovados',
       'verified_cnh'=>'CNH aprovada', 'available'=>'Disponível', 'vehicle_model'=>'Veículo', 'license_plate'=>'Placa', 'capacity'=>'Passageiros', 'document_reference'=>'Referência documental',
@@ -16,6 +17,7 @@ module Backoffice
       'meeting_point'=>'Encontro', 'dropoff_point'=>'Desembarque', 'conditions'=>'Condições', 'service_type'=>'Serviço', 'service_id'=>'ID do serviço', 'completed_at'=>'Concluído em', 'active_role'=>'Perfil ativo', 'gov_verified'=>'Gov.br autenticado'
     }.freeze
     VALUES = { 'admin'=>'Administrador', 'suporte'=>'Suporte', 'pending'=>'Pendente', 'published'=>'Publicado', 'rejected'=>'Recusado', 'hidden'=>'Oculto',
+      'operador_coleta'=>'Operador de coleta', 'partner'=>'Estabelecimento parceiro', 'trail'=>'Trilhas no app', 'fixed'=>'Valor em reais', 'percent'=>'Percentual',
       'open'=>'Aberto', 'answered'=>'Respondido', 'closed'=>'Encerrado', 'resolved'=>'Resolvido', 'dismissed'=>'Arquivado', 'investigating'=>'Em investigação',
       'active'=>'Ativo', 'cancelled'=>'Cancelado', 'draft'=>'Rascunho', 'archived'=>'Arquivado', 'approved'=>'Aprovado', 'refunded'=>'Estornado', 'confirmed'=>'Confirmado',
       'completed'=>'Concluído', 'pending_approval'=>'Aguardando aceite', 'approved_waiting_payment'=>'Aguardando pagamento', 'counteroffer'=>'Em negociação',
