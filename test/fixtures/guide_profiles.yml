@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  specialization: MyText
+  languages: MyText
+  verified_documents: false
+  subscription_plan: MyString
+
+two:
+  user: two
+  specialization: MyText
+  languages: MyText
+  verified_documents: false
+  subscription_plan: MyString
