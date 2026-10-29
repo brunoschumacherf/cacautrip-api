@@ -81,6 +81,7 @@ GEM
       securerandom (>= 0.3)
       tzinfo (~> 2.0)
     base64 (0.3.0)
+    bcrypt (3.1.22)
     benchmark (0.5.0)
     bigdecimal (4.1.3)
     bootsnap (1.26.1)
@@ -195,6 +196,12 @@ GEM
       tsort
     reline (0.7.0)
       io-console (~> 0.5)
+    rswag-api (2.17.0)
+      activesupport (>= 5.2, < 8.2)
+      railties (>= 5.2, < 8.2)
+    rswag-ui (2.17.0)
+      actionpack (>= 5.2, < 8.2)
+      railties (>= 5.2, < 8.2)
     securerandom (0.4.1)
     thor (1.5.0)
     timeout (0.6.1)
@@ -211,11 +218,14 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  bcrypt (~> 3.1.7)
   bootsnap
   debug
   pg (~> 1.1)
   puma (>= 5.0)
   rails (~> 7.1.6)
+  rswag-api
+  rswag-ui
   tzinfo-data
 
 RUBY VERSION

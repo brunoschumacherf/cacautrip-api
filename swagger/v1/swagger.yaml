@@ -1,0 +1,63 @@
+---
+openapi: 3.0.1
+info:
+  title: API Cacautrip
+  version: v1
+  description: Documentação oficial da API do Cacautrip - Turismo na Costa do Cacau.
+servers:
+  - url: http://localhost:3000
+    description: Servidor de Desenvolvimento Local
+
+paths:
+  /signup:
+    post:
+      summary: Cadastrar novo usuário (Turista)
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - name
+                - email
+                - password
+      responses:
+        '201':
+          description: Usuário criado com sucesso
+        '422':
+          description: Erros de validação
+  
+  /login:
+    post:
+      summary: Realizar login na plataforma
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login realizado com sucesso
+        '401':
+          description: Credenciais inválidas
