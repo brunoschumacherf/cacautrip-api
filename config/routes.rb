@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  patch '/me/avatar', to: 'profile_photos#update'
+  delete '/me/avatar', to: 'profile_photos#destroy'
+  get '/profile_photos/:id', to: 'profile_photos#show'
   get '/admin', to: redirect('/gestao')
   namespace :backoffice, path: 'gestao' do
     get '/pontos-de-coleta', to: 'records#index', defaults: { resource: 'eco_collection_points' }, as: :collection_points
@@ -50,6 +53,7 @@ Rails.application.routes.draw do
   get '/privacy/export', to: 'privacy#export'
   post '/privacy/deletion_request', to: 'privacy#request_deletion'
   get '/catalog', to: 'catalog#index'
+  get '/catalog/highlights', to: 'catalog#highlights'
   get '/map_points', to: 'map_points#index'
   get '/destinations/:id', to: 'catalog#show'
   get '/shared_routes/:token', to: 'shared_routes#show'

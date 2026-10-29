@@ -1,4 +1,5 @@
-abort 'Execute somente no banco de desenvolvimento.' unless Rails.env.development? && ActiveRecord::Base.connection.current_database == 'cacautrip_development'
+require Rails.root.join('lib/demo_seed_database')
+abort 'Execute somente no banco de desenvolvimento.' unless DemoSeedDatabase.allowed?
 
 # Regulariza somente os profissionais fictícios publicados pelo seed do MVP.
 # Não altera turistas, cadastros reais nem as exigências da listagem pública.

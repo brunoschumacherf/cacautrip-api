@@ -1,4 +1,5 @@
-abort 'Use somente o banco de desenvolvimento.' unless Rails.env.development? && ActiveRecord::Base.connection.current_database == 'cacautrip_development'
+require Rails.root.join('lib/demo_seed_database')
+abort 'Use somente o banco de desenvolvimento.' unless DemoSeedDatabase.allowed?
 [EcoCollectionPoint, EcoPartner, Destination, TrailStop, EmergencyPoint].each do |model|
   model.where(latitude: nil).or(model.where(longitude: nil)).find_each do |record|
     GeocodePlaceJob.perform_now(model.name, record.id)

@@ -45,6 +45,153 @@ tags:
 security:
 - bearerAuth: []
 paths:
+  /me/avatar:
+    patch:
+      tags: [Conta e privacidade]
+      summary: Enviar ou substituir minha foto de perfil
+      description: JPG, PNG ou WebP de até 2 MiB; valida o conteúdo do arquivo. Retorna o perfil atualizado com avatar_url.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Sessão inválida
+        '413':
+          description: Foto maior que 2 MiB
+        '422':
+          description: Foto ausente ou formato não aceito
+    delete:
+      tags: [Conta e privacidade]
+      summary: Remover minha foto de perfil
+      responses:
+        '200':
+          description: Perfil atualizado com avatar_url nulo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Sessão inválida
+  /profile_photos/{id}:
+    get:
+      tags: [Conta e privacidade]
+      summary: Exibir foto por endereço assinado
+      description: Use avatar_url de /me. ID é token assinado; versão precisa coincidir com a foto atual. Cache privado de cinco minutos.
+      security: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Arquivo da foto
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Token ou versão inválidos, foto removida ou conta suspensa
+
+  /catalog/highlights:
+    get:
+      tags:
+      - Catálogo e destinos
+      summary: Consultar banners e fotos da cidade
+      description: Até seis banners com prioridade para fotos dos destinos cadastrados e complemento do Wikimedia Commons. Independente da paginação. Cidade explícita, cidade do destino mais próximo das coordenadas ou padrão Ilhéus. Fotos externas ilustram a cidade; não criam destinos nem representam um ponto turístico específico. Cache de 6h para fotos e 15min para resultados vazios.
+      security: []
+      parameters:
+      - name: city
+        in: query
+        schema:
+          type: string
+      - name: latitude
+        in: query
+        schema:
+          type: number
+      - name: longitude
+        in: query
+        schema:
+          type: number
+      responses:
+        '200':
+          description: Banners, cidade selecionada e cidades cadastradas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  city:
+                    type: string
+                    nullable: true
+                  cities:
+                    type: array
+                    items:
+                      type: string
+                  banners:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        destination_id:
+                          type: integer
+                          nullable: true
+                        name:
+                          type: string
+                        city:
+                          type: string
+                        category:
+                          type: string
+                        caption:
+                          type: string
+                        image_url:
+                          type: string
+                          format: uri
+                        source:
+                          type: string
+                          enum: [catalog, wikimedia]
+                        source_url:
+                          type: string
+                          format: uri
+                        author:
+                          type: string
+                        license:
+                          type: string
+                        license_url:
+                          type: string
+                          nullable: true
+
   "/signup":
     post:
       operationId: post_signup
@@ -7576,6 +7723,10 @@ components:
     User:
       type: object
       properties:
+        avatar_url:
+          type: string
+          nullable: true
+          description: Caminho assinado da foto, relativo à origem da API.
         id:
           type: integer
           format: int64

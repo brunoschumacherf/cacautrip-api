@@ -25,7 +25,7 @@ services:
       - "3000:3000"
     environment:
       RAILS_ENV: development
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/cacautrip_development
+      DATABASE_URL: ${CACAUTRIP_DATABASE_URL:-postgresql://postgres:postgres@db:5432/cacautrip_development}
       SUPPORT_AI_URL: ${SUPPORT_AI_URL:-}
       SUPPORT_AI_TOKEN: ${SUPPORT_AI_TOKEN:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
@@ -52,7 +52,7 @@ services:
       - .:/rails
     environment:
       RAILS_ENV: development
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/cacautrip_development
+      DATABASE_URL: ${CACAUTRIP_DATABASE_URL:-postgresql://postgres:postgres@db:5432/cacautrip_development}
     depends_on:
       web:
         condition: service_healthy

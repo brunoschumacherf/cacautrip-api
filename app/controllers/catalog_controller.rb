@@ -1,4 +1,7 @@
 class CatalogController < ApplicationController
+  def highlights
+    render json: DestinationHighlights.call(city: params[:city], latitude: params[:latitude], longitude: params[:longitude])
+  end
   def show
     render json: Destination.where(active: true).find(params[:id])
   end

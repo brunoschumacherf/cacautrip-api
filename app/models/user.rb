@@ -8,6 +8,7 @@ class User < ApplicationRecord
 
   has_one :guide_profile, dependent: :destroy
   has_one :driver_profile, dependent: :destroy
+  has_one :profile_photo, dependent: :destroy
   has_many :routes, dependent: :destroy
   has_many :bookings, dependent: :destroy
   has_many :notifications, dependent: :destroy
@@ -19,7 +20,9 @@ class User < ApplicationRecord
   validates :active_role, inclusion: { in: ['tourist', 'guide', 'driver'] }
 
   def public_profile
+    avatar = ProfilePhoto.where(user_id: id).select(:id, :version).first
     as_json(only: [:id, :name, :email, :gov_verified, :active_role, :preferences, :admin]).merge(
+      avatar_url: avatar&.url_path,
       eco_points: eco_points, google_connected: google_uid.present?, guide_profile: guide_profile, driver_profile: driver_profile,
       roles: ['tourist', ('guide' if guide_profile), ('driver' if driver_profile)].compact)
   end

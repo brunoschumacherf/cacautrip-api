@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>CACAU TRIP · Gestão</title>
+  <%= favicon_link_tag '/favicon.ico', type: 'image/x-icon' %>
   <%= csrf_meta_tags %>
   <%= stylesheet_link_tag '/backoffice.css' %>
   <%= stylesheet_link_tag '/backoffice-navigation.css' %>
@@ -12,7 +13,7 @@
   <% if current_admin_user %>
     <aside class="sidebar">
       <% sections = management_sections %>
-      <a class="brand" href="<%= management_home_path %>"><span class="logo"><%= management_icon('S', size: 25) %></span><span>CACAU TRIP<small>PAINEL DE GESTÃO</small></span></a>
+      <a class="brand" href="<%= management_home_path %>"><img class="brand-image" src="/cacautrip.png" width="42" height="42" alt="Cacau Trip"><span>CACAU TRIP<small>PAINEL DE GESTÃO</small></span></a>
       <details class="management-menu" open>
         <summary class="management-menu-toggle"><span><%= management_icon('menu', size: 18) %> Menu de gestão</span><%= management_icon('chevron', size: 16) %></summary>
         <nav class="management-nav" aria-label="Áreas administrativas">

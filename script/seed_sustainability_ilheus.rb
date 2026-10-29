@@ -1,7 +1,8 @@
+require Rails.root.join('lib/demo_seed_database')
 # Executar somente em development: bin/rails runner script/seed_sustainability_ilheus.rb
 # Dados de apresentação: nomes fictícios, endereços de referência em Ilhéus.
 # Não presume parceria ou aceitação de cupons por estabelecimentos reais.
-abort 'Execute somente no banco de desenvolvimento.' unless Rails.env.development? && ActiveRecord::Base.connection.current_database == 'cacautrip_development'
+abort 'Execute somente no banco de desenvolvimento.' unless DemoSeedDatabase.allowed?
 
 notes_path = ENV.fetch('NOTES_PATH', Rails.root.join('..', 'notes.md').expand_path.to_s)
 notes_parent = File.dirname(notes_path)

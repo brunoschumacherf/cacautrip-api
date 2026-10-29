@@ -1,5 +1,6 @@
+require Rails.root.join('lib/demo_seed_database')
 # Ativa planos pagos simulados apenas nas seis contas locais de apresentação.
-abort 'Execute somente no banco de desenvolvimento.' unless Rails.env.development? && ActiveRecord::Base.connection.current_database == 'cacautrip_development'
+abort 'Execute somente no banco de desenvolvimento.' unless DemoSeedDatabase.allowed?
 assignments = [
   ['guia01@cacautrip.test', 'guide', 'premium'],
   ['guia02@cacautrip.test', 'guide', 'featured'],

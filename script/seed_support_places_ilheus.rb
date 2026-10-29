@@ -1,4 +1,5 @@
-abort 'Use somente o banco de desenvolvimento.' unless Rails.env.development? && ActiveRecord::Base.connection.current_database == 'cacautrip_development'
+require Rails.root.join('lib/demo_seed_database')
+abort 'Use somente o banco de desenvolvimento.' unless DemoSeedDatabase.allowed?
 # Fontes oficiais e endereços consultados em 29/10/2026; não presume disponibilidade.
 places = [
   ['Hospital Regional Costa do Cacau', 'hospital', 'Rodovia Jorge Amado (BR-415), km 4,5, s/n - Banco da Vitória, Ilhéus - BA', '(73) 3235-5300'],
@@ -11,7 +12,7 @@ places.each do |name, category, address, phone|
   place.assign_attributes(category: category, address: address)
   place.phone = phone if phone
   place.save!
-  GeocodePlaceJob.perform_now('EmergencyPoint', place.id) if place.latitude.nil? || place.longitude.nil?
+  GeocodePlaceJob.perform_now('EmergencyPoint', place.id) if ENV.fetch('SEED_GEOCODE', '1') == '1' && (place.latitude.nil? || place.longitude.nil?)
   puts "#{place.name}: #{place.reload.latitude && place.longitude ? 'localizado no mapa' : 'endereço cadastrado; localização pendente'}"
   STDOUT.flush
 end

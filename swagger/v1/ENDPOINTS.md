@@ -134,3 +134,13 @@ Contrato: swagger.yaml. Abrir em http://localhost:3000/api-docs.
 | GET | `/api-docs/v1/swagger.yaml` | Infraestrutura | Baixar este contrato OpenAPI |
 
 Gerador: script/build_openapi.rb. Lê o schema versionado e as permissões estáticas; não inicia o Rails nem consulta o banco. Não substitui testes da API.
+
+## Banners da home
+
+- `GET /catalog/highlights`: fotos e destaques por cidade; parâmetros opcionais `city`, `latitude` e `longitude`. Público, até seis banners, com créditos e licença quando a imagem vem do Wikimedia Commons. Ver HOME_BANNERS.md na raiz.
+
+## Foto do perfil
+
+- `PATCH /me/avatar`: multipart com photo (JPG, PNG, WebP, até 2 MiB); exige Bearer e retorna User com avatar_url. Erros 401/413/422.
+- `DELETE /me/avatar`: remove a foto do dono autenticado e retorna User.
+- `GET /profile_photos/{id}?version=...`: endereço assinado retornado em avatar_url; imagem binária com cache privado, 404 quando inválido/removido. Não recebe ID numérico.
