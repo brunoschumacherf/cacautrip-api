@@ -1,0 +1,16 @@
+<header class="page-heading"><div><p class="eyebrow">CENTRAL DE ATENDIMENTO</p><h1>Chamado #<%= @ticket.id %></h1><p><%= @ticket.user.name %> · <%= @ticket.user.email %></p><p>Responsável: <%= @ticket.assigned_staff&.name || 'Não atribuído' %></p></div><%= link_to 'Voltar para a fila', backoffice_support_chats_path, class: 'secondary' %></header>
+<section class="panel support-conversation" data-support-url="<%= messages_backoffice_support_chat_path(@ticket) %>" data-last-id="<%= @messages.last&.id || 0 %>">
+  <div class="actions"><span class="pill" id="support-status"><%= { 'open' => 'Aguardando equipe', 'answered' => 'Em atendimento', 'closed' => 'Encerrado' }[@ticket.status] %></span><span class="muted" id="support-connection" role="status" aria-live="polite">A conversa atualiza automaticamente.</span></div>
+  <% if @has_older %><p><%= link_to 'Ver mensagens anteriores', backoffice_support_chat_path(@ticket, before_id: @messages.first.id), class: 'secondary' %> <%= link_to 'Ver mais recentes', backoffice_support_chat_path(@ticket), class: 'secondary' %></p><% end %>
+  <div id="support-messages" role="log" aria-live="polite"><%= render 'messages', messages: @messages %></div>
+</section>
+<section class="panel" id="responder">
+  <% if @ticket.status == 'closed' %><h2>Atendimento encerrado</h2><p>O histórico permanece disponível para consulta.</p><% else %>
+    <h2>Responder ao usuário</h2>
+    <%= form_with url: reply_backoffice_support_chat_path(@ticket), method: :post do |form| %>
+      <div class="field"><%= form.label :content, 'Sua mensagem' %><%= form.text_area :content, value: @draft, rows: 4, maxlength: 4000, required: true %></div><%= form.submit 'Enviar resposta', class: 'primary' %>
+    <% end %>
+    <hr><%= button_to 'Encerrar atendimento', close_backoffice_support_chat_path(@ticket), method: :post, class: 'secondary' %>
+  <% end %>
+</section>
+<script src="/support-chat.js" defer></script>

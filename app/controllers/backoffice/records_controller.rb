@@ -1,6 +1,7 @@
 module Backoffice
   class RecordsController < BaseController
     before_action :load_resource
+    before_action :redirect_support_chat
     before_action :require_write!, only: [:new, :create, :edit, :update, :destroy]
     before_action :load_record, only: [:show, :edit, :update, :destroy]
 
@@ -50,6 +51,12 @@ module Backoffice
     end
 
     private
+
+    def redirect_support_chat
+      return unless @resource == 'tickets'
+      target = params[:id].present? ? backoffice_support_chat_path(params[:id]) : backoffice_support_chats_path
+      redirect_to target, status: :see_other
+    end
 
     def load_resource
       @resource = params[:resource].to_s

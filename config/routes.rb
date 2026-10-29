@@ -1,6 +1,13 @@
 Rails.application.routes.draw do
   get '/admin', to: redirect('/gestao')
   namespace :backoffice, path: 'gestao' do
+    resources :support_chats, path: 'atendimentos', only: [:index, :show] do
+      member do
+        get :messages, path: 'mensagens'
+        post :reply, path: 'responder'
+        post :close, path: 'encerrar'
+      end
+    end
     get '/', to: 'dashboard#index', as: :root
     get '/entrar', to: 'sessions#new', as: :login
     post '/entrar', to: 'sessions#create'
@@ -86,6 +93,9 @@ Rails.application.routes.draw do
   get '/support', to: 'support#index'
   post '/support', to: 'support#create'
   post '/support/ask', to: 'support#ask'
+  get '/support/:id', to: 'support#show'
+  post '/support/:id/messages', to: 'support#message'
+  post '/support/:id/human', to: 'support#human'
   get '/admin/dashboard', to: 'admin#dashboard'
   patch '/admin/commission', to: 'admin#commission'
   get '/admin/:resource', to: 'admin#index'

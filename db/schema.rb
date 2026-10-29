@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_100000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -289,13 +289,32 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_100000) do
     t.index ["user_id"], name: "index_subscriptions_on_user_id"
   end
 
+  create_table "support_messages", force: :cascade do |t|
+    t.bigint "support_ticket_id", null: false
+    t.bigint "admin_user_id"
+    t.string "role", null: false
+    t.string "sender_name"
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["admin_user_id"], name: "index_support_messages_on_admin_user_id"
+    t.index ["support_ticket_id", "id"], name: "index_support_messages_on_support_ticket_id_and_id"
+    t.index ["support_ticket_id"], name: "index_support_messages_on_support_ticket_id"
+  end
+
   create_table "support_tickets", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.text "message", null: false
     t.text "reply"
-    t.string "status", default: "open"
+    t.string "status", default: "ai"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "human_requested_at"
+    t.string "ai_request_id"
+    t.datetime "ai_started_at"
+    t.bigint "assigned_staff_id"
+    t.index ["assigned_staff_id"], name: "index_support_tickets_on_assigned_staff_id"
+    t.index ["status", "updated_at"], name: "index_support_tickets_on_status_and_updated_at"
     t.index ["user_id"], name: "index_support_tickets_on_user_id"
   end
 
@@ -421,6 +440,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_100000) do
   add_foreign_key "routes", "users"
   add_foreign_key "subscription_orders", "users"
   add_foreign_key "subscriptions", "users"
+  add_foreign_key "support_messages", "admin_users", on_delete: :nullify
+  add_foreign_key "support_messages", "support_tickets"
+  add_foreign_key "support_tickets", "admin_users", column: "assigned_staff_id", on_delete: :nullify
   add_foreign_key "support_tickets", "users"
   add_foreign_key "trail_departures", "trails"
   add_foreign_key "trail_stops", "trails"

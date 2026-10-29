@@ -1,0 +1,14 @@
+<header class="page-heading"><div><p class="eyebrow">CENTRAL DE ATENDIMENTO</p><h1>Atendimento humano</h1><p>Conversas encaminhadas pelos usuários, com todo o histórico do assistente.</p></div><%= link_to 'Atualizar fila', request.path, class: 'secondary' %></header>
+<section class="metrics"><article><span>Aguardando equipe</span><strong><%= @waiting %></strong></article><article><span>Em atendimento</span><strong><%= @ongoing %></strong></article></section>
+<section class="panel">
+  <%= form_with url: backoffice_support_chats_path, method: :get, class: 'filters' do |form| %>
+    <div><%= form.label :q, 'Buscar usuário ou assunto' %><%= form.text_field :q, value: params[:q] %></div>
+    <div><%= form.label :status, 'Situação' %><%= form.select :status, [['Aguardando equipe', 'open'], ['Em atendimento', 'answered'], ['Encerrados', 'closed'], ['Todos', 'all']], selected: @status %></div>
+    <%= form.submit 'Filtrar', class: 'primary' %>
+  <% end %>
+  <div class="table-scroll"><table><thead><tr><th>Chamado</th><th>Usuário e assunto</th><th>Situação</th><th>Responsável</th><th>Atualizado</th><th></th></tr></thead><tbody>
+    <% @tickets.each do |ticket| %><tr><td>#<%= ticket.id %></td><td><strong><%= ticket.user.name %></strong><small><%= ticket.message.truncate(110) %></small></td><td><%= { 'open' => 'Aguardando equipe', 'answered' => 'Em atendimento', 'closed' => 'Encerrado' }[ticket.status] %></td><td><%= ticket.assigned_staff&.name || 'Não atribuído' %></td><td><%= ticket.updated_at.in_time_zone('America/Bahia').strftime('%d/%m/%Y %H:%M') %></td><td><%= link_to 'Abrir conversa', backoffice_support_chat_path(ticket), class: 'table-link' %></td></tr><% end %>
+    <% if @tickets.empty? %><tr><td colspan="6" class="empty">Nenhum chamado nesta situação.</td></tr><% end %>
+  </tbody></table></div>
+  <div class="pagination"><% if @page > 1 %><%= link_to 'Anterior', backoffice_support_chats_path(status: @status, q: params[:q], page: @page - 1), class: 'secondary' %><% end %><span>Página <%= @page %></span><% if @more %><%= link_to 'Próxima', backoffice_support_chats_path(status: @status, q: params[:q], page: @page + 1), class: 'secondary' %><% end %></div>
+</section>

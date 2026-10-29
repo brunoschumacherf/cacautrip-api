@@ -1,0 +1,6 @@
+<% messages.each do |message| %>
+  <article class="support-bubble <%= message.role %>" data-message-id="<%= message.id %>">
+    <strong><%= { 'user' => @ticket.user.name, 'assistant' => 'Assistente virtual', 'staff' => message.sender_name.presence || 'Equipe de suporte', 'system' => 'Atendimento' }[message.role] %></strong>
+    <p><%= message.content %></p><small><%= message.created_at.in_time_zone('America/Bahia').strftime('%d/%m/%Y %H:%M') %></small>
+  </article>
+<% end %>

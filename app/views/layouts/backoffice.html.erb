@@ -12,8 +12,10 @@
     <aside class="sidebar">
       <a class="brand" href="<%= backoffice_root_path %>"><span class="logo">C</span><span>CACAU TRIP<small>PAINEL DE GESTÃO</small></span></a>
       <nav aria-label="Áreas administrativas">
+        <%= link_to 'Atendimento humano', backoffice_support_chats_path, class: ('selected' if controller_name == 'support_chats') %>
         <%= link_to 'Visão geral', backoffice_root_path, class: ('selected' if controller_name == 'dashboard') %>
         <% Backoffice::Registry::RESOURCES.each do |key, spec| %>
+          <% next if key == 'tickets' %>
           <% if can_read?(key) %><%= link_to spec[:label], backoffice_records_path(resource: key), class: ('selected' if @resource == key) %><% end %>
         <% end %>
         <% if current_admin_user.admin? %>
