@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_090000) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -152,6 +152,24 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_090000) do
     t.float "longitude"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "google_auth_flows", force: :cascade do |t|
+    t.string "state_digest", null: false
+    t.string "exchange_digest", null: false
+    t.string "nonce", null: false
+    t.string "redirect_uri", null: false
+    t.bigint "link_user_id"
+    t.bigint "authenticated_user_id"
+    t.string "ticket_digest"
+    t.string "status", default: "pending", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["authenticated_user_id"], name: "index_google_auth_flows_on_authenticated_user_id"
+    t.index ["link_user_id"], name: "index_google_auth_flows_on_link_user_id"
+    t.index ["state_digest"], name: "index_google_auth_flows_on_state_digest", unique: true
+    t.index ["ticket_digest"], name: "index_google_auth_flows_on_ticket_digest", unique: true
   end
 
   create_table "guide_profiles", force: :cascade do |t|
@@ -361,6 +379,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_090000) do
     t.jsonb "preferences", default: {}, null: false
     t.string "google_uid"
     t.boolean "suspended", default: false
+    t.index ["google_uid"], name: "index_users_on_google_uid", unique: true, where: "(google_uid IS NOT NULL)"
   end
 
   create_table "wallet_entries", force: :cascade do |t|
@@ -390,6 +409,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_090000) do
   add_foreign_key "conversations", "users", column: "tourist_id"
   add_foreign_key "destinations", "users", column: "provider_id"
   add_foreign_key "driver_profiles", "users"
+  add_foreign_key "google_auth_flows", "users", column: "authenticated_user_id", on_delete: :nullify
+  add_foreign_key "google_auth_flows", "users", column: "link_user_id", on_delete: :nullify
   add_foreign_key "guide_profiles", "users"
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "users", column: "sender_id"

@@ -29,6 +29,10 @@ services:
       SUPPORT_AI_URL: ${SUPPORT_AI_URL:-}
       SUPPORT_AI_TOKEN: ${SUPPORT_AI_TOKEN:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:3000/auth/google/callback}
+      GOOGLE_APP_REDIRECT_URIS: ${GOOGLE_APP_REDIRECT_URIS:-http://localhost:8081/google-callback,cacautrip://google-callback}
     depends_on:
       db:
         condition: service_healthy

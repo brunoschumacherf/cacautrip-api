@@ -18,7 +18,7 @@ class User < ApplicationRecord
 
   def public_profile
     as_json(only: [:id, :name, :email, :gov_verified, :active_role, :preferences, :admin]).merge(
-      guide_profile: guide_profile, driver_profile: driver_profile,
+      google_connected: google_uid.present?, guide_profile: guide_profile, driver_profile: driver_profile,
       roles: ['tourist', ('guide' if guide_profile), ('driver' if driver_profile)].compact)
   end
 end
