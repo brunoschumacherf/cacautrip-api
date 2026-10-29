@@ -10,9 +10,36 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_29_030947) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_29_042851) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "bookings", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "service_type"
+    t.integer "service_id"
+    t.decimal "total_amount", precision: 10, scale: 2
+    t.string "status", default: "pending"
+    t.string "payment_status", default: "pending"
+    t.string "payment_method"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "date"
+    t.string "meeting_point"
+    t.index ["user_id"], name: "index_bookings_on_user_id"
+  end
+
+  create_table "conversations", force: :cascade do |t|
+    t.bigint "tourist_id", null: false
+    t.bigint "guide_id"
+    t.bigint "driver_id"
+    t.string "status", default: "active"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["driver_id"], name: "index_conversations_on_driver_id"
+    t.index ["guide_id"], name: "index_conversations_on_guide_id"
+    t.index ["tourist_id"], name: "index_conversations_on_tourist_id"
+  end
 
   create_table "driver_profiles", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -37,6 +64,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_030947) do
     t.index ["user_id"], name: "index_guide_profiles_on_user_id"
   end
 
+  create_table "messages", force: :cascade do |t|
+    t.bigint "conversation_id", null: false
+    t.bigint "sender_id", null: false
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id"], name: "index_messages_on_conversation_id"
+    t.index ["sender_id"], name: "index_messages_on_sender_id"
+  end
+
   create_table "routes", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "title"
@@ -58,7 +95,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_29_030947) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "bookings", "users"
+  add_foreign_key "conversations", "users", column: "driver_id"
+  add_foreign_key "conversations", "users", column: "guide_id"
+  add_foreign_key "conversations", "users", column: "tourist_id"
   add_foreign_key "driver_profiles", "users"
   add_foreign_key "guide_profiles", "users"
+  add_foreign_key "messages", "conversations"
+  add_foreign_key "messages", "users", column: "sender_id"
   add_foreign_key "routes", "users"
 end

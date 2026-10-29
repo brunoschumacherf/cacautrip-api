@@ -61,3 +61,73 @@ paths:
           description: Login realizado com sucesso
         '401':
           description: Credenciais inválidas
+  /professional_profiles/guide:
+    post:
+      summary: Criar perfil de Guia com Gov.br (Mock)
+      tags:
+        - Perfis Profissionais
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+                specialization:
+                  type: string
+                  example: "Ecoturismo e Trilhas"
+                languages:
+                  type: string
+                  example: "Português, Inglês"
+                subscription_plan:
+                  type: string
+                  example: "free"
+              required:
+                - user_id
+                - specialization
+      responses:
+        '201':
+          description: Perfil de Guia criado com sucesso
+        '404':
+          description: Usuário não encontrado
+
+  /professional_profiles/driver:
+    post:
+      summary: Criar perfil de Motorista com Gov.br (Mock)
+      tags:
+        - Perfis Profissionais
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+                vehicle_model:
+                  type: string
+                  example: "Renault Duster"
+                license_plate:
+                  type: string
+                  example: "ABC-1234"
+                capacity:
+                  type: integer
+                  example: 4
+                subscription_plan:
+                  type: string
+                  example: "free"
+              required:
+                - user_id
+                - vehicle_model
+                - license_plate
+                - capacity
+      responses:
+        '201':
+          description: Perfil de Motorista criado com sucesso
+        '404':
+        description: Usuário não encontrado
