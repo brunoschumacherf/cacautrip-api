@@ -16,7 +16,7 @@ User.transaction do
     accounts[role] = names.each_with_index.map do |name, index|
       email = "#{role == :tourist ? 'turista' : role == :driver ? 'motorista' : 'guia'}#{format('%02d', index + 1)}@cacautrip.test"
       user = User.find_or_initialize_by(email: email)
-      user.assign_attributes(name: name, password: password, password_confirmation: password, gov_verified: true,
+      user.assign_attributes(name: name, password: password, password_confirmation: password, gov_verified: false,
         active_role: role.to_s, suspended: false, preferences: { region: cities[index % cities.length], interests: 'Praias, trilhas e gastronomia', notifications: true })
       user.save!
       if role == :driver

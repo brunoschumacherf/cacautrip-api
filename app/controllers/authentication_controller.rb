@@ -7,6 +7,9 @@ class AuthenticationController < ApplicationController
 
   def update_profile
     attributes = params.permit(:name, :email, :active_role, preferences: [:interests, :accessible, :region, :notifications])
+    if ['guide', 'driver'].include?(attributes[:active_role]) && !@current_user.gov_verified?
+      return render_error('Verifique sua conta com Gov.br antes de usar um perfil profissional.', :forbidden)
+    end
     if ['guide', 'driver'].include?(attributes[:active_role]) && !@current_user.public_send("#{attributes[:active_role]}_profile")
       return render_error('Cadastre primeiro este perfil profissional')
     end
@@ -15,13 +18,16 @@ class AuthenticationController < ApplicationController
   end
 
   def verify_gov
+    # Verificação local do MVP; substituir pelo retorno validado do provedor Gov.br.
     @current_user.update!(gov_verified: true)
-    render json: { user: @current_user.as_json(only: [:id, :name, :email, :gov_verified]), message: 'Conta autenticada no Gov.br (simulação)' }
+    render json: { user: @current_user.public_profile, verification_status: 'verified',
+      message: 'Conta verificada com sucesso. Você já pode cadastrar seu perfil de guia ou motorista.' }
   end
 
   def signup
     return render_error('Muitas tentativas. Aguarde um minuto.', :too_many_requests) unless AuthenticationThrottle.allow?(request.remote_ip)
     user = User.new(user_params)
+    user.gov_verified = false
     if user.save
       render json: { message: "Usuário criado com sucesso", token: session_token(user), user: { id: user.id, name: user.name, email: user.email, gov_verified: user.gov_verified } }, status: :created
     else

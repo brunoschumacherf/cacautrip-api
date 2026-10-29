@@ -31,7 +31,7 @@ guides.each_with_index do |guide, index|
     trail.assign_attributes(description: variant.zero? ? 'Um passeio em grupo para conhecer paisagens e histórias locais, com paradas para contemplação e conversa com o guia.' : 'Uma experiência cultural para descobrir o cotidiano da região, seus sabores e sua relação com o cacau.',
       region: city, image_url: variant.zero? ? 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1000&fit=crop' : 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1000&fit=crop',
       difficulty: variant.zero? ? (index.even? ? 'easy' : 'moderate') : 'easy', route_mode: variant.zero? ? 'ordered' : 'flexible',
-      status: 'published', duration_minutes: variant.zero? ? 180 : 240, distance_km: variant.zero? ? 3.5 : 2,
+      status: profile.user.gov_verified? ? 'published' : 'draft', duration_minutes: variant.zero? ? 180 : 240, distance_km: variant.zero? ? 3.5 : 2,
       price: variant.zero? ? 75 + index * 5 : 280 + index * 10, price_mode: variant.zero? ? 'per_person' : 'group',
       minimum_age: variant.zero? ? 10 : 0, accessible: variant == 1 && index.even?,
       included: 'Acompanhamento do guia, apresentação dos pontos e orientações do percurso.',
@@ -93,7 +93,7 @@ guides.each_with_index do |guide, index|
   chat.messages.find_or_create_by!(sender: guide, content: 'Olá! Cada trilha tem um percurso e um calendário próprios. Veja o roteiro completo e escolha a saída que combina com você.')
 end
 admin = User.find_or_initialize_by(email: 'admin@cacautrip.test')
-admin.assign_attributes(name: 'Administração Cacautrip', password: password, admin: true, gov_verified: true, active_role: 'tourist')
+admin.assign_attributes(name: 'Administração Cacautrip', password: password, admin: true, gov_verified: false, active_role: 'tourist')
 admin.save!
 
 notes_path = ENV.fetch('NOTES_PATH', Rails.root.join('notes.md').to_s)
