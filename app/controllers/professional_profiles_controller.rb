@@ -1,81 +1,69 @@
 class ProfessionalProfilesController < ApplicationController
+  before_action :authenticate_user!, only: [:create_guide, :create_driver, :mine]
+
+  COMMON = [:region, :price, :available, :accessible, :services, :document_reference, :description, :image_url].freeze
+
   def create_guide
-    user = User.find_by(id: params[:user_id])
-    return render json: { error: "Usuário não encontrado" }, status: :not_found unless user
-
-    user.update(gov_verified: true)
-
-    guide_profile = user.guide_profile || user.build_guide_profile
-    guide_profile.assign_attributes(
-      specialization: params[:specialization],
-      languages: params[:languages],
-      subscription_plan: params[:subscription_plan] || "free",
-      verified_documents: true
-    )
-
-    if guide_profile.save
-      render json: { 
-        message: "Perfil de Guia ativado com sucesso via Gov.br (Mock)", 
-        user: { id: user.id, name: user.name, gov_verified: user.gov_verified },
-        guide_profile: guide_profile 
-      }, status: :created
-    else
-      render json: { errors: guide_profile.errors.full_messages }, status: :unprocessable_entity
-    end
+    save_profile('guide', COMMON + [:specialization, :languages])
   end
 
   def create_driver
-    user = User.find_by(id: params[:user_id])
-    return render json: { error: "Usuário não encontrado" }, status: :not_found unless user
-
-    user.update(gov_verified: true)
-
-    driver_profile = user.driver_profile || user.build_driver_profile
-    driver_profile.assign_attributes(
-      vehicle_model: params[:vehicle_model],
-      license_plate: params[:license_plate],
-      capacity: params[:capacity],
-      subscription_plan: params[:subscription_plan] || "free",
-      verified_cnh: true
-    )
-
-    if driver_profile.save
-      render json: { 
-        message: "Perfil de Motorista ativado com sucesso via Gov.br (Mock)", 
-        user: { id: user.id, name: user.name, gov_verified: user.gov_verified },
-        driver_profile: driver_profile 
-      }, status: :created
-    else
-      render json: { errors: driver_profile.errors.full_messages }, status: :unprocessable_entity
-    end
+    save_profile('driver', COMMON + [:vehicle_model, :license_plate, :capacity])
   end
 
-  # GET /professional_profiles/guides
   def index_guides
-    guides = GuideProfile.includes(:user).all
-    render json: guides.map { |g| {
-      id: g.id,
-      user_id: g.user.id,
-      name: g.user.name,
-      specialization: g.specialization,
-      languages: g.languages,
-      subscription_plan: g.subscription_plan,
-      verified: g.verified_documents
-    }}, status: :ok
+    list(GuideProfile)
   end
 
-  # GET /professional_profiles/drivers
   def index_drivers
-    drivers = DriverProfile.includes(:user).all
-    render json: drivers.map { |d| {
-      id: d.id,
-      user_id: d.user.id,
-      name: d.user.name,
-      vehicle_model: d.vehicle_model,
-      license_plate: d.license_plate,
-      capacity: d.capacity,
-      subscription_plan: d.subscription_plan,
-      verified: d.verified_cnh
-    }}, status: :ok
+    list(DriverProfile)
+  end
+
+  def show
+    klass = { 'guide' => GuideProfile, 'driver' => DriverProfile }[params[:kind]]
+    return render_error('Serviço inválido', :not_found) unless klass
+    profile = klass.joins(:user).where(users: { gov_verified: true, suspended: false }, moderation_status: 'published').find(params[:id])
+    render json: ProfessionalDirectory.serialize(profile)
+  end
+
+  def mine
+    profiles = [@current_user.guide_profile, @current_user.driver_profile].compact
+    payload = profiles.map do |profile|
+      type = profile.is_a?(GuideProfile) ? 'Guia' : 'Motorista'
+      bookings = Booking.where(service_type: type, service_id: profile.id)
+      ProfessionalDirectory.serialize(profile, private_fields: true).merge(
+        type: type, bookings_count: bookings.count, completed_count: bookings.where(status: 'completed').count,
+        gross: bookings.where(payment_status: 'approved').sum(:total_amount),
+        net: bookings.where(payment_status: 'approved').sum(:professional_amount))
+    end
+    render json: payload
+  end
+
+  private
+
+  def list(klass)
+    profiles = klass.joins(:user).where(users: { gov_verified: true, suspended: false }, moderation_status: 'published').includes(:user)
+    profiles = profiles.where(available: true) if params[:available] == 'true'
+    profiles = profiles.where(accessible: true) if params[:accessible] == 'true'
+    profiles = profiles.where('price <= ?', params[:max_price].to_f) if params[:max_price].present?
+    profiles = profiles.where('capacity >= ?', params[:people].to_i) if klass == DriverProfile && params[:people].present?
+    data = profiles.map { |profile| ProfessionalDirectory.serialize(profile) }
+    [:q, :region, :specialization, :services].each do |filter|
+      next if params[filter].blank?
+      term = params[filter].to_s.downcase
+      data.select! { |item| [item[:name], item['region'], item['specialization'], item['services'], item['vehicle_model'], item['description']].compact.join(' ').downcase.include?(term) }
+    end
+    data.select! { |item| item[:rating].to_f >= params[:min_rating].to_f } if params[:min_rating].present?
+    data.sort_by! { |item| [-({ 'premium' => 2, 'featured' => 1 }[item[:plan]] || 0), -item[:rating].to_f, item['price'].to_f] }
+    render json: data
+  end
+
+  def save_profile(kind, fields)
+    return render_error('Autentique sua conta no Gov.br pelo perfil antes de se cadastrar.', :forbidden) unless @current_user.gov_verified?
+    profile = @current_user.public_send("#{kind}_profile") || @current_user.public_send("build_#{kind}_profile")
+    profile.assign_attributes(params.permit(*fields, availability: []))
+    profile.moderation_status = 'pending' if profile.new_record? || profile.document_reference_changed?
+    profile.save!
+    render json: { message: 'Perfil salvo. Cadastros e alterações de documento aguardam aprovação administrativa.', profile: ProfessionalDirectory.serialize(profile, private_fields: true) }
   end
 end

@@ -1,14 +1,11 @@
-# Be sure to restart your server when you modify this file.
-
-# Avoid CORS issues when API is called from the frontend app.
-# Handle Cross-Origin Resource Sharing (CORS) in order to accept cross-origin AJAX requests.
-
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins "*" # Em produção, substitua pelo domínio do app mobile/web
-
-    resource "*",
-      headers: :any,
-      methods: [:get, :post, :put, :patch, :delete, :options, :head]
+    configured = ENV.fetch('CORS_ORIGINS', '').split(',').map(&:strip).reject(&:blank?)
+    if Rails.env.production?
+      origins(*configured) if configured.any?
+    else
+      origins(*(configured.presence || ['*']))
+    end
+    resource '*', headers: :any, methods: [:get, :post, :put, :patch, :delete, :options, :head]
   end
 end

@@ -39,6 +39,8 @@ gem "bootsnap", require: false
 # gem "rack-cors"
 
 group :development, :test do
+  # Rails 7.1 test runner is incompatible with Minitest 6.
+  gem 'minitest', '~> 5.0'
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ]
 end

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
@@ -11,19 +9,48 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cacautrip_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   web:
+    image: cacautrip-api-web
     build: .
-    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails db:prepare && exec bundle exec rails s -p 3000 -b '0.0.0.0'"
     volumes:
       - .:/rails
     ports:
       - "3000:3000"
     environment:
-      - RAILS_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/cacautrip_development
+      RAILS_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/cacautrip_development
+      SUPPORT_AI_URL: ${SUPPORT_AI_URL:-}
+      SUPPORT_AI_TOKEN: ${SUPPORT_AI_TOKEN:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 45s
+      retries: 5
+
+  maintenance:
+    image: cacautrip-api-web
+    command: ["bash", "-c", "bundle exec rails runner 'loop do; MaintenanceJob.perform_now; sleep 300; end'"]
+    restart: unless-stopped
+    volumes:
+      - .:/rails
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/cacautrip_development
+    depends_on:
+      web:
+        condition: service_healthy
 
 volumes:
   postgres_data:
